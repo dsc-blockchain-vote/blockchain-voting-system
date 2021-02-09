@@ -4,6 +4,7 @@ import LeftDrawer from "./components/common/LeftDrawer";
 import { makeStyles } from "@material-ui/core/styles";
 
 import NavBar from "./components/common/NavBar";
+import CreateElectionView from "./components/views/CreateElectionView/CreateElectionView";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -29,6 +30,7 @@ function App() {
             <main className={classes.content}>
                 <div className={classes.toolbar} />
                 {/* Page content goes here */}
+                <CreateElectionView/>
             </main>
         </div>
     );
