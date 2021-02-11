@@ -5,7 +5,8 @@ import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
 
-export default function Candidates() {
+export default function Candidates(props) {
+
     return (
         <Paper>
             <Box p={3} pt={3}>
@@ -18,6 +19,9 @@ export default function Candidates() {
                             required
                             label="Candidate 1"
                             variant="outlined"
+                            name='candidate'
+                            value={props.candidate1}
+                            onChange={props.candidate1Change}
                             fullWidth
                         />
                     </Grid>
@@ -26,11 +30,15 @@ export default function Candidates() {
                             required
                             label="Candidate 2"
                             variant="outlined"
+                            name='candidate'
+                            value={props.candidate2}
+                            onChange={props.candidate2Change}
                             fullWidth
-                        />
+                            />
                     </Grid>
                 </Grid>
             </Box>
         </Paper>
-    );
-}
+        );
+    }
+

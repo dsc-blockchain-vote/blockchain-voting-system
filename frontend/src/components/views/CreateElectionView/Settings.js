@@ -1,4 +1,4 @@
-import React, { Component, useState } from "react";
+import React from "react";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
@@ -6,33 +6,11 @@ import DateFnsUtils from "@date-io/date-fns";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
+import { DomainPropTypes } from "@material-ui/pickers/constants/prop-types";
 
-class Settings extends Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            title: "",
-            start: new Date(),
-            end: new Date()
-        }
-    }
-
-    handleTitleChange = (e) => {
-        this.setState({title: e.target.value});
-    }
-
-    handleStartChange = (date) => {
-        this.setState({start: date});
-    };
-
-    handleEndChange = (date) => {
-        this.setState({end: date})
-    };
-
-    render() { 
-        const start = this.state.start;
-        const end = this.state.end;
-        return (
+export default function Settings(props) {
+   
+    return ( 
             <Paper>
             <Box p={3} pt={3}>
                 <Grid container spacing={3}>
@@ -43,8 +21,8 @@ class Settings extends Component {
                         <TextField
                             label="Election title"
                             variant="outlined"
-                            value={this.state.title}
-                            onChange={this.handleTitleChange}
+                            value={props.title}
+                            onChange={props.titleChange}
                             fullWidth
                             required
                         />
@@ -55,8 +33,8 @@ class Settings extends Component {
                                 label="Start time"
                                 disablePast
                                 inputVariant="outlined"
-                                value={start}
-                                onChange={this.handleStartChange}
+                                value={props.start}
+                                onChange={props.startChange}
                                 fullWidth
                                 required
                             />
@@ -66,8 +44,8 @@ class Settings extends Component {
                                 label="End time"
                                 disablePast
                                 inputVariant="outlined"
-                                value={end}
-                                onChange={this.handleEndChange}
+                                value={props.end}
+                                onChange={props.endChange}
                                 fullWidth
                                 required
                             />
@@ -77,7 +55,5 @@ class Settings extends Component {
             </Box>
         </Paper>
         );
-    }
 }
  
-export default Settings;
