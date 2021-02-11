@@ -5,14 +5,16 @@ import { makeStyles } from "@material-ui/core/styles";
 
 import Settings from "./Settings";
 import Candidates from "./Candidates";
+import Container from "@material-ui/core/Container";
+import Divider from "@material-ui/core/Divider";
+import Grid from "@material-ui/core/Grid";
 
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
     },
     divider: {
-        // marginTop: theme.spacing(3),
-        margin: theme.spacing(3),
+        marginTop: theme.spacing(3),
     },
 }));
 
@@ -20,12 +22,20 @@ export default function CreateElectionForm() {
     const classes = useStyles();
 
     return (
-        <Paper>
-            <Settings/>
-            <Candidates/>
-            <Button variant="contained" color="primary" size="large">
-                Create
-            </Button>
-        </Paper>
+        <Container maxWidth="lg">
+            <Grid container spacing={3}>
+                <Grid item xs={12}>
+                    <Settings />
+                </Grid>
+                <Grid item xs={12}>
+                    <Candidates />
+                </Grid>
+                <Grid item>
+                    <Button variant="contained" color="primary" size="large">
+                        Create
+                    </Button>
+                </Grid>
+            </Grid>
+        </Container>
     );
 }
