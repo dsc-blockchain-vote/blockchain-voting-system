@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Component, useState } from "react";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
@@ -6,22 +6,34 @@ import DateFnsUtils from "@date-io/date-fns";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
-import Divider from "@material-ui/core/Divider";
 
-export default function Settings() {
-    const [selectedStartDate, setSelectedStart] = useState(new Date());
-    const [selectedEndDate, setSelectedEnd] = useState(new Date());
+class Settings extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            title: "",
+            start: new Date(),
+            end: new Date()
+        }
+    }
 
-    const handleStartChange = (date) => {
-        setSelectedStart(date);
+    handleTitleChange = (e) => {
+        this.setState({title: e.target.value});
+    }
+
+    handleStartChange = (date) => {
+        this.setState({start: date});
     };
 
-    const handleEndChange = (date) => {
-        setSelectedEnd(date);
+    handleEndChange = (date) => {
+        this.setState({end: date})
     };
 
-    return (
-        <Paper>
+    render() { 
+        const start = this.state.start;
+        const end = this.state.end;
+        return (
+            <Paper>
             <Box p={3} pt={3}>
                 <Grid container spacing={3}>
                     <Grid item xs={12}>
@@ -29,10 +41,12 @@ export default function Settings() {
                     </Grid>
                     <Grid item xs={12}>
                         <TextField
-                            required
                             label="Election title"
                             variant="outlined"
+                            value={this.state.title}
+                            onChange={this.handleTitleChange}
                             fullWidth
+                            required
                         />
                     </Grid>
                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -41,8 +55,8 @@ export default function Settings() {
                                 label="Start time"
                                 disablePast
                                 inputVariant="outlined"
-                                value={selectedStartDate}
-                                onChange={handleStartChange}
+                                value={start}
+                                onChange={this.handleStartChange}
                                 fullWidth
                                 required
                             />
@@ -52,8 +66,8 @@ export default function Settings() {
                                 label="End time"
                                 disablePast
                                 inputVariant="outlined"
-                                value={selectedEndDate}
-                                onChange={handleEndChange}
+                                value={end}
+                                onChange={this.handleEndChange}
                                 fullWidth
                                 required
                             />
@@ -62,5 +76,8 @@ export default function Settings() {
                 </Grid>
             </Box>
         </Paper>
-    );
+        );
+    }
 }
+ 
+export default Settings;
