@@ -3,19 +3,26 @@ pragma experimental ABIEncoderV2;
 import "./VotingSystem.sol";
 import {DataTypes} from "./DataTypes.sol";
 
+/**
+@title First Past the Post
+@dev Implimentation of the VotingSystem interface
+ */
 contract FirstPastThePost is VotingSystem {
     
-    DataTypes.Candidate candidate;
-    
-    candidate[] public candidates;
-    
-    constructor(candidate[] memory candidateCopy) {
-        candidates = candidateCopy;
+    /**
+    @dev initializes FirstPastThePost contract by passing in an array of DataTypes.Candidate
+    @param candidate_ array of DataTypes.Candidate struct
+     */
+    constructor(DataTypes.Candidate[] memory candidate_) {
+        candidates = candidate_;
         
     }
     
-    function calculate() public view override
-            returns (uint winningCandidate_)
+    /**
+    @dev Calculates the winner under First Past the Post system
+    @return winningCandidate_ It is the id of the winning candidate
+     */
+    function calculate() external view override returns (uint winningCandidate_)
     {
         uint winningVoteCount = 0;
         for (uint i = 0; i < candidates.length; i++) {
@@ -26,9 +33,5 @@ contract FirstPastThePost is VotingSystem {
         }
     }
     
-        function getWinner() public view override
-            returns (bytes32 winnerName_)
-    {
-        winnerName_ = candidates[calculate()].name;
-    }
+    
 }
