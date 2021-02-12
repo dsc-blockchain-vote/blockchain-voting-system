@@ -1,7 +1,7 @@
 pragma solidity >=0.7.0 <0.8.0;
 pragma experimental ABIEncoderV2;
 import "./VotingSystem.sol";
-import {DataTypes} from "./DataTypes.sol";
+import "./DataTypes.sol";
 
 /**
 @title First Past the Post
@@ -11,24 +11,25 @@ contract FirstPastThePost is VotingSystem {
     
     /**
     @dev initializes FirstPastThePost contract by passing in an array of DataTypes.Candidate
-    @param candidate_ array of DataTypes.Candidate struct
+    @param _candidate array of DataTypes.Candidate struct
      */
-    constructor(DataTypes.Candidate[] memory candidate_) {
-        candidates = candidate_;
-        
+    constructor(DataTypes.Candidate[] memory _candidate) {
+        for(uint i = 0; i < _candidate.length; i++){
+            candidates.push(_candidate[i]);
+        }        
     }
     
     /**
     @dev Calculates the winner under First Past the Post system
-    @return winningCandidate_ It is the id of the winning candidate
+    @return winningCandidate It is the id of the winning candidate
      */
-    function calculate() external view override returns (uint winningCandidate_)
+    function calculate() external view override returns (uint winningCandidate)
     {
         uint winningVoteCount = 0;
         for (uint i = 0; i < candidates.length; i++) {
             if (candidates[i].voteCount > winningVoteCount) {
                 winningVoteCount = candidates[i].voteCount;
-                winningCandidate_ = i;
+                winningCandidate = i;
             }
         }
     }
