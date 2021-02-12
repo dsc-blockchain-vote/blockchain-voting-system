@@ -1,7 +1,7 @@
 pragma solidity >=0.7.0 <0.8.0;
 pragma experimental ABIEncoderV2;
 
-import {DataTypes} from "./DataTypes.sol";
+import "./DataTypes.sol";
 
 /**
 @title Voting System
@@ -15,9 +15,9 @@ abstract contract VotingSystem {
     /**
     @dev Returns the name of the winning candidate
      */
-    function getWinner() external view returns (string memory winnerName_)
+    function getWinner() external view returns (string memory _winnerName)
     {
-        winnerName_ = candidates[this.calculate()].name;
+        _winnerName = candidates[this.calculate()].name;
     }
 }
     
