@@ -6,8 +6,8 @@ import DateFnsUtils from "@date-io/date-fns";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
-import { DomainPropTypes } from "@material-ui/pickers/constants/prop-types";
 
+//function to display the input textbox for the election title and for picking the start and end dates 
 export default function Settings(props) {
    
     return ( 
@@ -21,8 +21,9 @@ export default function Settings(props) {
                         <TextField
                             label="Election title"
                             variant="outlined"
+                            id='title'
                             value={props.title}
-                            onChange={props.titleChange}
+                            onChange={props.inputChange}
                             fullWidth
                             required
                         />
