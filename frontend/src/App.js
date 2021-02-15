@@ -31,7 +31,7 @@ function App() {
             <main className={classes.content}>
                 <div className={classes.toolbar} />
                 {/* Page content goes here */}
-                <CreateElectionView/>
+                <RouteHandler/>
             </main>
         </div>
     );
