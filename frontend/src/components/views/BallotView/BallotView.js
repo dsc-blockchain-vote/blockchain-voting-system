@@ -3,60 +3,61 @@ import Button from "@material-ui/core/Button";
 import Container from "@material-ui/core/Container";
 import FormControl from "@material-ui/core/FormControl";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-import FormHelperText from "@material-ui/core/FormHelperText";
 import FormLabel from "@material-ui/core/FormLabel";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import Typography from "@material-ui/core/Typography";
-import React, { Component } from "react";
+import firebaseDb from "../../../firebase";
+import React, { Component, useState, useEffect } from "react";
 
-class BallotView extends Component {
-    state = {
-        title: "Election 1",
-        candidates: [
-            { id: 1, name: "Name 1" },
-            { id: 2, name: "Name 2" },
-            { id: 3, name: "Name 3" },
-        ],
-        otherEnabled: true,
-    };
+export default function BallotView() {
 
-    submitForm = (event, value) => {
+    const [title, setTitle] = useState('Election 1');
+    const [otherEnabled, setOtherEnabled] = useState(true);
+    const [candidates, setCandidates] = useState([]);
+
+    const submitForm = (event, value) => {
         event.preventDefault();
         console.log(value);
-
-        // TODO: Database stuff goes here
     };
 
-    render() {
-        return (
-            <Container maxWidth="lg">
-                <Paper>
-                    <Box p={3} pt={3}>
-                        <Grid container spacing={3}>
-                            <Grid item xs={12}>
-                                <Typography variant="h5">
-                                    {this.state.title}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <BallotList
-                                    submitForm={(e, val) =>
-                                        this.submitForm(e, val)
-                                    }
-                                    candidates={this.state.candidates}
-                                    other={this.state.otherEnabled}
-                                />
-                            </Grid>
+    useEffect(() => {
+        firebaseDb.child('election').on('value', snapshot => {
+            const data = snapshot.val();
+            const tempList = [];
+            for (let id in data) {
+                tempList.push(data[id]);
+            }
+            setCandidates(tempList[1].candidates);
+        })
+    }, []);
+
+    return (
+        <Container maxWidth="lg">
+            <Paper>
+                <Box p={3} pt={3}>
+                    <Grid container spacing={3}>
+                        <Grid item xs={12}>
+                            <Typography variant="h5">
+                                {title}
+                            </Typography>
                         </Grid>
-                    </Box>
-                </Paper>
-            </Container>
+                        <Grid item xs={12}>
+                            <BallotList
+                                submitForm={(e, val) => {submitForm(e, val)} }
+
+                                candidates={candidates}
+                                other={otherEnabled}
+                            />
+                        </Grid>
+                    </Grid>
+                </Box>
+            </Paper>
+        </Container>
         );
     }
-}
 
 class BallotList extends Component {
     state = {
@@ -104,4 +105,3 @@ class BallotList extends Component {
     }
 }
 
-export default BallotView;
