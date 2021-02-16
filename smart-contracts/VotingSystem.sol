@@ -32,5 +32,6 @@ abstract contract VotingSystem {
         } else {
             _winnerName = candidates[winners[0]].name;
         }
+
     }
 }

@@ -13,20 +13,22 @@ contract FirstPastThePost is VotingSystem {
     @param _candidate array of DataTypes.Candidate struct
      */
     constructor(DataTypes.Candidate[] memory _candidate) {
-        for (uint256 i = 0; i < _candidate.length; i++) {
+        for(uint i = 0; i < _candidate.length; i++){
             candidates.push(_candidate[i]);
-        }
+        }       
     }
 
     /**
     @dev Calculates the winner under First Past the Post system
     @return winningCandidate It is the id of the winning candidate
      */
+
     function calculate()
         external
         view
         override
         returns (uint256[] memory winningCandidate)
+
     {
         uint256 winningVoteCount = 0;
         uint256 tempIndex = 0;
@@ -37,7 +39,7 @@ contract FirstPastThePost is VotingSystem {
                 tempIndex = 0;
                 winningCandidate[tempIndex] = i;
             }
-            if (candidates[i].voteCount == winningVoteCount) {
+            if (candidates[i].voteCount == winningVoteCount) { 
                 tempIndex++;
                 winningCandidate[tempIndex] = i;
             }
