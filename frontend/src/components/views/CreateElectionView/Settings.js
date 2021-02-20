@@ -6,10 +6,22 @@ import DateFnsUtils from "@date-io/date-fns";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
+import { makeStyles } from "@material-ui/core/styles";
+
+const useStyles = makeStyles((theme) => ({
+    error: {
+        position: "relative",
+        bottom: 0,
+        color: "red",
+        fontSize: 12
+      }
+}));
 
 //function to display the input textbox for the election title and for picking the start and end dates 
 export default function Settings(props) {
-   
+
+    const classes = useStyles();
+
     return ( 
             <Paper>
             <Box p={3} pt={3}>
@@ -27,6 +39,7 @@ export default function Settings(props) {
                             fullWidth
                             required
                         />
+                        {props.errors.title.length > 0 && <span className={classes.error}>{props.errors.title}</span>}
                     </Grid>
                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
                         <Grid item xs={6}>

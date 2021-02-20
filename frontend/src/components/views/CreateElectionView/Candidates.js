@@ -13,9 +13,21 @@ import IconButton from "@material-ui/core/IconButton";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Button from "@material-ui/core/Button";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
+import { makeStyles } from "@material-ui/core/styles";
+
+const useStyles = makeStyles((theme) => ({
+    error: {
+        position: "relative",
+        bottom: 0,
+        color: "red",
+        fontSize: 12
+      }
+}));
 
 //function to display each added candidate's name along with an option to delete a candidate or add more candidates
 export default function Candidates(props){
+
+    const classes = useStyles();
 
         return (
             <Paper>
@@ -31,19 +43,14 @@ export default function Candidates(props){
                                     return (
                                         <Candidate
                                             key = {candidate.id}
-                                            onDelete={() =>
-                                                props.addOrDelete('delete', candidate.id)
-                                            }
-                                            onChange={(e) =>
-                                                props.inputChange(
-                                                    e, candidate.id
-                                                )
-                                            }
+                                            addOrDelete={props.addOrDelete}
+                                            inputChange={props.inputChange}
                                             candidate = {candidate}
+                                            errors = {props.errors}
                                         />
-                                    );
+                                    ); 
                                 })}
-
+                                {props.errors.candidateName.length > 0 && <span className={classes.error}>{props.errors.candidateName}</span>}
                                 <ListItem>
                                     <Button
                                         variant="contained"
@@ -51,7 +58,7 @@ export default function Candidates(props){
                                         color="primary"
                                         startIcon={<AddCircleIcon />}
                                         onClick={() =>
-                                            props.addOrDelete('add')
+                                            props.addOrDelete('addCandidate')
                                         }
                                     >
                                         Add Candidate
@@ -78,15 +85,22 @@ export default function Candidates(props){
             <ListItem>
                 <TextField
                     defaultValue={props.candidate.name}
+                    id='candidate'
                     label={"Candidate name"}
-                    onChange={props.onChange}
+                    onChange={(e) =>
+                        props.inputChange(
+                            e, props.candidate.id
+                        )
+                    }
                     fullWidth
                 />
                 <ListItemSecondaryAction>
                     <IconButton
                         edge="end"
                         aria-label="delete"
-                        onClick={props.onDelete}
+                        onClick={() =>
+                            props.addOrDelete('deleteCandidate', props.candidate.id)
+                        }
                     >
                         <DeleteIcon />
                     </IconButton>
