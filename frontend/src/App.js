@@ -2,7 +2,6 @@ import React from "react";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import LeftDrawer from "./components/common/LeftDrawer";
 import { makeStyles } from "@material-ui/core/styles";
-
 import NavBar from "./components/common/NavBar";
 import CreateElectionView from "./components/views/CreateElectionView/CreateElectionView";
 import RouteHandler from "./components/router/RouteHandler";
