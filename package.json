@@ -1,0 +1,23 @@
+{
+  "name": "blockchain-voting-system",
+  "version": "1.0.0",
+  "description": "\"Server file\"",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dsc-blockchain-vote/blockchain-voting-system.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dsc-blockchain-vote/blockchain-voting-system/issues"
+  },
+  "homepage": "https://github.com/dsc-blockchain-vote/blockchain-voting-system#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
