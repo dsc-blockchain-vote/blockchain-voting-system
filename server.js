@@ -27,7 +27,13 @@ if (env !== "production") {
 
 //middleware
 const deploy = async (req, res, next) => {
-  const { organizer_account, organizer_password } = req.body;
+  const {
+    organizer_account,
+    organizer_password,
+    candidates,
+    end_time,
+    start_time,
+  } = req.body;
   try {
     // should use firebase for checking an Organizer account exists
     const accounts = await web3.eth.getAccounts();
@@ -46,7 +52,10 @@ const deploy = async (req, res, next) => {
     console.log("Account unlocked");
 
     const result = await new web3.eth.Contract(abi)
-      .deploy({ data: "0x" + bytecode, arguments: ["Hi there"] })
+      .deploy({
+        data: "0x" + bytecode,
+        arguments: [candidates, end_time, start_time],
+      })
       .send({ from: organizer_account });
     console.log("Deployed election at 0x" + result.options.address);
 
