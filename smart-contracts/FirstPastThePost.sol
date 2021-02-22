@@ -20,17 +20,21 @@ contract FirstPastThePost is VotingSystem {
 
     /**
     @dev Calculates the winner under First Past the Post system
-    @return winningCandidate It is the id of the winning candidate
+    @return winningCandidate Returns an array of the winning candidate(s) 
+    (In case of ties, an array with the frst 10 candidates that tied are returned)
      */
-    function calculate()
+function calculate()
         external
         view
         override
-        returns (uint256[] memory winningCandidate)
+        returns (uint256[10] memory winningCandidate)
     {
         uint256 winningVoteCount = 0;
         uint256 tempIndex = 0;
         for (uint256 i = 0; i < candidates.length; i++) {
+            if(tempIndex > 10){
+                break;
+            }
             if (candidates[i].voteCount > winningVoteCount) {
                 winningVoteCount = candidates[i].voteCount;
                 delete winningCandidate;
@@ -38,8 +42,8 @@ contract FirstPastThePost is VotingSystem {
                 winningCandidate[tempIndex] = i;
             }
             if (candidates[i].voteCount == winningVoteCount) {
-                tempIndex++;
                 winningCandidate[tempIndex] = i;
+                tempIndex++;
             }
         }
     }
