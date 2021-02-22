@@ -37,6 +37,11 @@ contract Election {
         require(block.timestamp >= startTime);
         _;
     }
+    
+    modifier onlyBeforeElection() {
+        require(block.timestamp < startTime);
+        _;
+    }
 
     /**
     @dev initilazes the Election by storing the candidates and start, end time
@@ -85,16 +90,77 @@ contract Election {
     @dev calculate the winning candidate according to the choosen voting system
     @return winningCandidate unit id of the winner candidate
      */
-    function calculateWinner() public returns (uint256 winningCandidate) {
+    function calculateWinner() public returns (uint256[10] memory winningCandidate) {
         FirstPastThePost countMethod = new FirstPastThePost(candidates);
         winningCandidate = countMethod.calculate();
     }
 
     /**
-    @dev returns the winning candidate name
+    @dev returns the winning candidate(s) name
     @return winnerName string name of the winning candidate
      */
     function winnerCandidateName() public returns (string memory winnerName) {
-        winnerName = candidates[calculateWinner()].name;
+        FirstPastThePost countMethod = new FirstPastThePost(candidates);
+        uint256[10] memory winners = countMethod.calculate();
+        if (winners.length > 1) {
+            winnerName = string(abi.encodePacked("tie: ", candidates[winners[0]].name));
+            for (uint256 i = 1; i < winners.length; i++) {
+                // abi.encodePacked(arg) is an ABI encoding function that concatinates 2 strings together;
+                if(winners[i] == 0 && i != 0){
+                    break;
+                }
+                winnerName = string(
+                    abi.encodePacked(winnerName,", ", candidates[winners[i]].name)
+                );
+            }
+            
+        } else {
+            winnerName = candidates[winners[0]].name;
+        }
+    }
+    /**
+     @dev adds the candidate with the given name to the election. 
+     This function is only callable before the election begins
+     @param newCandidate the name of the new candidate
+    */
+    function addCandidate(string memory newCandidate) public onlyBeforeElection {
+        candidates.push(DataTypes.Candidate({
+                    name: newCandidate,
+                    voteCount: 0,
+                    id: candidates.length
+                }));
+    }
+    /**
+    @dev removes the specified candidate from the election 
+    @param candidateID the ID of the candidate to be removed
+    
+    NOTE: this version replaces the specified candidate by replacing it with a Deleted candidate object. 
+    It is significantly more gas inefficient however may introduce problems if the organizer
+    removes a large enough number of candidates and wastes memory on the blockchain.
+     */
+    function removeCandidateA(uint candidateID) public {
+        candidates[candidateID] = DataTypes.Candidate({
+                    name: "Deleted",
+                    voteCount: 0,
+                    id: 9999
+                });
+    }
+    /**
+    @dev removes the specified candidate from the election 
+    @param candidateID the ID of the candidate to be removed
+    
+    NOTE: this version deletes the specified candidate in the array 
+    and then adjusts the index of all other candidates within the array
+    such that at index i holds the candidate with id i.
+    
+    This is very gas inefficient
+     */
+    
+    function removeCandidateB(uint candidateID) public {
+        for (uint i = candidateID; i < candidates.length - 1; i++) {
+            candidates[i] = candidates[i + 1];
+            candidates[i].id--;
+        }
+        delete candidates[candidates.length - 1];
     }
 }
