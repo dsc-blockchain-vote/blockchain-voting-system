@@ -37,6 +37,11 @@ contract Election {
         require(block.timestamp >= startTime);
         _;
     }
+    
+    modifier onlyBeforeElection() {
+        require(block.timestamp < startTime);
+        _;
+    }
 
     /**
     @dev initilazes the Election by storing the candidates and start, end time
@@ -112,5 +117,50 @@ contract Election {
         } else {
             winnerName = candidates[winners[0]].name;
         }
+    }
+    /**
+     @dev adds the candidate with the given name to the election. 
+     This function is only callable before the election begins
+     @param newCandidate the name of the new candidate
+    */
+    function addCandidate(string memory newCandidate) public onlyBeforeElection {
+        candidates.push(DataTypes.Candidate({
+                    name: newCandidate,
+                    voteCount: 0,
+                    id: candidates.length
+                }));
+    }
+    /**
+    @dev removes the specified candidate from the election 
+    @param candidateID the ID of the candidate to be removed
+    
+    NOTE: this version replaces the specified candidate by replacing it with a Deleted candidate object. 
+    It is significantly more gas inefficient however may introduce problems if the organizer
+    removes a large enough number of candidates and wastes memory on the blockchain.
+     */
+    function removeCandidateA(uint candidateID) public {
+        candidates[candidateID] = DataTypes.Candidate({
+                    name: "Deleted",
+                    voteCount: 0,
+                    id: 9999
+                });
+    }
+    /**
+    @dev removes the specified candidate from the election 
+    @param candidateID the ID of the candidate to be removed
+    
+    NOTE: this version deletes the specified candidate in the array 
+    and then adjusts the index of all other candidates within the array
+    such that at index i holds the candidate with id i.
+    
+    This is very gas inefficient
+     */
+    
+    function removeCandidateB(uint candidateID) public {
+        for (uint i = candidateID; i < candidates.length - 1; i++) {
+            candidates[i] = candidates[i + 1];
+            candidates[i].id--;
+        }
+        delete candidates[candidates.length - 1];
     }
 }
