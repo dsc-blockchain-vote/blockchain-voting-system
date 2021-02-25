@@ -12,6 +12,15 @@ const emailRegex = RegExp(
     /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
   );
 
+  const useStyles = makeStyles((theme) => ({
+    root: {
+        flexGrow: 1,
+    },
+    divider: {
+        marginTop: theme.spacing(3),
+    }
+}));
+
 //creates the entire form for an individual or organisation to create an election
 class CreateElectionForm extends Component{
     constructor(props) {
@@ -39,15 +48,6 @@ class CreateElectionForm extends Component{
             }
         }
     }
-    
-    useStyles = makeStyles((theme) => ({
-        root: {
-            flexGrow: 1,
-        },
-        divider: {
-            marginTop: theme.spacing(3),
-        }
-    }));
 
     //changes the value stored in title and the candidates list on receiving an input
     handleInputChange = (e, id) => {
@@ -163,7 +163,6 @@ class CreateElectionForm extends Component{
 
     //stores the election details entered into a firebase database called 'election'
     createElection = () =>{
-        console.log(this.state.errors.candidateName)
         if (this.state.errors.title === '' && this.checkForErrors('candidate') === true && 
         this.checkForErrors('voterName') === true && this.checkForErrors('voterID') === true && 
         this.checkForErrors('email') === true && this.state.title && this.state.start &&
