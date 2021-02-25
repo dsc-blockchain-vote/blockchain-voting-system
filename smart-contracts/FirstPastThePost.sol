@@ -35,15 +35,17 @@ function calculate()
             if(tempIndex > 10){
                 break;
             }
-            if (candidates[i].voteCount > winningVoteCount) {
-                winningVoteCount = candidates[i].voteCount;
-                delete winningCandidate;
-                tempIndex = 0;
-                winningCandidate[tempIndex] = i;
-            }
-            if (candidates[i].voteCount == winningVoteCount) {
-                winningCandidate[tempIndex] = i;
-                tempIndex++;
+            if(keccak256(abi.encodePacked((candidates[i].name))) != keccak256(abi.encodePacked(("Deleted")))){
+                if (candidates[i].voteCount > winningVoteCount) {
+                    winningVoteCount = candidates[i].voteCount;
+                    delete winningCandidate;
+                    tempIndex = 0;
+                    winningCandidate[tempIndex] = i;
+                }
+                else if (candidates[i].voteCount == winningVoteCount) {
+                    winningCandidate[tempIndex] = i;
+                    tempIndex++;
+                }
             }
         }
     }

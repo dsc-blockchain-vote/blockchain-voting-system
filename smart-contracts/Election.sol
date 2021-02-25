@@ -64,6 +64,29 @@ contract Election {
             );
         }
     }
+    
+    /**
+    @dev changes the elections start time if the start time is valid and the request
+    was made before the election started
+    @param _newStartTime uint storing the start time in epoch seconds
+     */
+    function setStartTime(uint256 _newStartTime) public onlyBeforeElection {
+        if(_newStartTime < endTime) {
+        startTime = _newStartTime;
+        }
+    }
+    
+    /**
+    @dev changes the elections end time if the end time is valid and the request
+    was made before the election started
+    @param _newEndTime uint storing the start time in epoch seconds
+     */
+    function setEndTime(uint256 _newEndTime) public onlyBeforeElection {
+        if(_newEndTime > startTime){
+            endTime = _newEndTime;     
+        }
+    }
+    
 
     /**
     @dev allows the organizer to give voting privilege to a voter
@@ -138,11 +161,11 @@ contract Election {
     It is significantly more gas inefficient however may introduce problems if the organizer
     removes a large enough number of candidates and wastes memory on the blockchain.
      */
-    function removeCandidateA(uint candidateID) public {
+    function removeCandidateA(uint candidateID) public onlyBeforeElection {
         candidates[candidateID] = DataTypes.Candidate({
                     name: "Deleted",
                     voteCount: 0,
-                    id: 9999
+                    id: 999999
                 });
     }
     /**
@@ -156,7 +179,7 @@ contract Election {
     This is very gas inefficient
      */
     
-    function removeCandidateB(uint candidateID) public {
+    function removeCandidateB(uint candidateID) public onlyBeforeElection {
         for (uint i = candidateID; i < candidates.length - 1; i++) {
             candidates[i] = candidates[i + 1];
             candidates[i].id--;
