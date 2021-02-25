@@ -6,10 +6,19 @@ import DateFnsUtils from "@date-io/date-fns";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
+import { makeStyles } from "@material-ui/core/styles";
+
+const useStyles = makeStyles((theme) => ({
+    helperText: {
+        color: 'red'
+    }
+}));
 
 //function to display the input textbox for the election title and for picking the start and end dates 
 export default function Settings(props) {
-   
+
+    const classes = useStyles();
+
     return ( 
             <Paper>
             <Box p={3} pt={3}>
@@ -19,9 +28,14 @@ export default function Settings(props) {
                     </Grid>
                     <Grid item xs={12}>
                         <TextField
+                            id="outlined-error-helper-text"
+                            helperText={props.errors.title?props.errors.title:''}
+                            FormHelperTextProps={{
+                                className: classes.helperText
+                              }}
                             label="Election title"
                             variant="outlined"
-                            id='title'
+                            name='title'
                             value={props.title}
                             onChange={props.inputChange}
                             fullWidth

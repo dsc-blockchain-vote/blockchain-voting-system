@@ -1,7 +1,5 @@
 import React from "react";
 import Box from "@material-ui/core/Box";
-import Checkbox from "@material-ui/core/Checkbox";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
@@ -16,37 +14,46 @@ import AddCircleIcon from "@material-ui/icons/AddCircle";
 import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
+    root: {
+      '& .MuiTextField-root': {
+        margin: theme.spacing(1.5),
+        width: '38ch',
+      },
+    },
     helperText: {
         color: 'red'
+    },
+    textField: {
+        id:"outlined-error-helper-text"
     }
-}));
+  }));
 
 //function to display each added candidate's name along with an option to delete a candidate or add more candidates
-export default function Candidates(props){
-
-    const classes = useStyles();
+export default function VotersList(props){
 
         return (
             <Paper>
                 <Box p={3} pt={3}>
                     <Grid container spacing={3}>
                         <Grid item xs={12}>
-                            <Typography variant="h5">Candidates</Typography>
+                            <Typography variant="h5">Voters List</Typography>
                         </Grid>
 
                         <Grid item xs={12}>
                             <List>
-                                {props.candidates.map((candidate) => {
+                                {props.voters.map((voter) => {
                                     return (
-                                        <Candidate
-                                            key = {candidate.id}
+                                        <Voter
+                                            key = {voter.id}
                                             addOrDelete={props.addOrDelete}
                                             inputChange={props.inputChange}
-                                            candidate = {candidate}
                                             errors = {props.errors}
+                                            voter = {voter}
                                         />
-                                    ); 
+                                    );
                                 })}
+                                <div>
+                                </div>
                                 <ListItem>
                                     <Button
                                         variant="contained"
@@ -54,20 +61,13 @@ export default function Candidates(props){
                                         color="primary"
                                         startIcon={<AddCircleIcon />}
                                         onClick={() =>
-                                            props.addOrDelete('addCandidate')
+                                            props.addOrDelete('addVoter')
                                         }
                                     >
-                                        Add Candidate
+                                        Add Voter
                                     </Button>
                                 </ListItem>
                             </List>
-                        </Grid>
-
-                        <Grid item xs={6}>
-                            <FormControlLabel
-                                control={<Checkbox color="primary" />}
-                                label="Enable 'Other' candidates"
-                            />
                         </Grid>
                     </Grid>
                 </Box>
@@ -76,41 +76,72 @@ export default function Candidates(props){
     }
 
     //a function to display the input textbook for candidate name along with the delete icon for each candidate
-    function Candidate(props) {
+    function Voter(props) {
 
         const classes = useStyles();
 
         return (
-            <ListItem>
-                <TextField
-                    id="outlined-error-helper-text"
-                    helperText={props.errors.candidateName[props.candidate.id]?props.errors.candidateName[props.candidate.id]:''}
+            <ListItem className={classes.root}>
+                <TextField className={classes.textField}
+                    variant='outlined'
+                    helperText={props.errors.voterName[props.voter.id]?props.errors.voterName[props.voter.id]:''}
                     FormHelperTextProps={{
                         className: classes.helperText
                       }}
-                    defaultValue={props.candidate.name}
-                    name='candidate'
-                    label={"Candidate name"}
+                    name='name'
+                    defaultValue={props.voter.name}
+                    value={props.voter.name}
+                    label={"Voter name"}
                     onChange={(e) =>
                         props.inputChange(
-                            e, props.candidate.id
+                            e, props.voter.id
+                        )
+                    }            
+                />              
+                <TextField className={classes.textField}
+                    variant='outlined'
+                    helperText={props.errors.voterID[props.voter.id]?props.errors.voterID[props.voter.id]:''}
+                    FormHelperTextProps={{
+                        className: classes.helperText
+                      }}
+                    name='voterID'
+                    value={props.voter.voterID}
+                    defaultValue={props.voter.voterID}
+                    label={"Voter ID"}
+                    onChange={(e) =>
+                        props.inputChange(
+                            e, props.voter.id
                         )
                     }
-                    fullWidth
+                />
+                <TextField className={classes.textField}
+                    variant='outlined'
+                    helperText={props.errors.email[props.voter.id]?props.errors.email[props.voter.id]:''}
+                    FormHelperTextProps={{
+                        className: classes.helperText
+                      }}
+                    name='voterEmail'
+                    value={props.voter.email}
+                    defaultValue={props.voter.email}
+                    label={"Voter email"}
+                    type='email'
+                    onChange={(e) =>
+                        props.inputChange(
+                            e, props.voter.id
+                        )
+                    }
                 />
                 <ListItemSecondaryAction>
                     <IconButton
                         edge="end"
                         aria-label="delete"
+                        name='voter'
                         onClick={() =>
-                            props.addOrDelete('deleteCandidate', props.candidate.id)
-                        }
-                    >
+                            props.addOrDelete('deleteVoter', props.voter.id)
+                        }>
                         <DeleteIcon />
                     </IconButton>
                 </ListItemSecondaryAction>
             </ListItem>
         );
     }
-
-
