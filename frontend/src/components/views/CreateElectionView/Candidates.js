@@ -16,12 +16,9 @@ import AddCircleIcon from "@material-ui/icons/AddCircle";
 import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
-    error: {
-        position: "relative",
-        bottom: 0,
-        color: "red",
-        fontSize: 12
-      }
+    helperText: {
+        color: 'red'
+    }
 }));
 
 //function to display each added candidate's name along with an option to delete a candidate or add more candidates
@@ -50,7 +47,6 @@ export default function Candidates(props){
                                         />
                                     ); 
                                 })}
-                                {props.errors.candidateName.length > 0 && <span className={classes.error}>{props.errors.candidateName}</span>}
                                 <ListItem>
                                     <Button
                                         variant="contained"
@@ -81,11 +77,19 @@ export default function Candidates(props){
 
     //a function to display the input textbook for candidate name along with the delete icon for each candidate
     function Candidate(props) {
+
+        const classes = useStyles();
+
         return (
             <ListItem>
                 <TextField
+                    id="outlined-error-helper-text"
+                    helperText={props.errors.candidateName[props.candidate.id]?props.errors.candidateName[props.candidate.id]:''}
+                    FormHelperTextProps={{
+                        className: classes.helperText
+                      }}
                     defaultValue={props.candidate.name}
-                    id='candidate'
+                    name='candidate'
                     label={"Candidate name"}
                     onChange={(e) =>
                         props.inputChange(

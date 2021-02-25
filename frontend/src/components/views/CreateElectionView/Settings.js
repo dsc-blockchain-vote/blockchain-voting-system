@@ -9,12 +9,9 @@ import Box from "@material-ui/core/Box";
 import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
-    error: {
-        position: "relative",
-        bottom: 0,
-        color: "red",
-        fontSize: 12
-      }
+    helperText: {
+        color: 'red'
+    }
 }));
 
 //function to display the input textbox for the election title and for picking the start and end dates 
@@ -31,15 +28,19 @@ export default function Settings(props) {
                     </Grid>
                     <Grid item xs={12}>
                         <TextField
+                            id="outlined-error-helper-text"
+                            helperText={props.errors.title?props.errors.title:''}
+                            FormHelperTextProps={{
+                                className: classes.helperText
+                              }}
                             label="Election title"
                             variant="outlined"
-                            id='title'
+                            name='title'
                             value={props.title}
                             onChange={props.inputChange}
                             fullWidth
                             required
                         />
-                        {props.errors.title.length > 0 && <span className={classes.error}>{props.errors.title}</span>}
                     </Grid>
                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
                         <Grid item xs={6}>
