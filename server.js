@@ -1,18 +1,20 @@
 "use strict";
-
+require("dotenv").config();
 const express = require("express");
 const Web3 = require("web3");
+const HDWalletProvider = require("@truffle/hdwallet-provider");
 const { abi, bytecode } = require("./compile");
 
 const env = process.env.NODE_ENV;
-const USERNAME = "node-1";
-const PASSWORD = "node1";
-const IP = "35.194.38.146";
+// secrets
+const mnemonic = process.env.MNEMONIC;
+const URL = process.env.URL;
 
-// connection to geth node
-const web3 = new Web3(
-  "http://" + USERNAME + ":" + PASSWORD + "@" + IP + "/rpc"
-);
+// account generation
+
+// start the express server
+const app = express();
+const port = process.env.PORT || 5000;
 
 // body-parser: middleware for parsing HTTP JSON body into a usable object
 const bodyParser = require("body-parser");
@@ -25,50 +27,80 @@ if (env !== "production") {
   app.use(cors());
 }
 
+const election_storage = {}; // TODO: use firebase
+
 //middleware
-const deploy = async (req, res, next) => {
-  const {
-    organizer_account,
-    organizer_password,
-    candidates,
-    end_time,
-    start_time,
-  } = req.body;
+const organizerContract = (req, res, next) => {
+  const organizer_account = req.body.organizer_account;
   try {
-    // should use firebase for checking an Organizer account exists
-    const accounts = await web3.eth.getAccounts();
-    for (i in accounts) {
-      if (i !== organizer_account) {
-        console.log("Organizer does not exist");
-        // res.status(404).send("Organizer does not exist");
-        return;
-      }
+    if (election_storage.hasOwnProperty(organizer_account)) {
+      return next();
+    } else {
+      res.status(401).send("Election contract does not exist");
+      return;
     }
-    await web3.eth.personal.unlockAccount(
-      organizer_account,
-      organizer_password,
-      500
-    );
-    console.log("Account unlocked");
-
-    const result = await new web3.eth.Contract(abi)
-      .deploy({
-        data: "0x" + bytecode,
-        arguments: [candidates, end_time, start_time],
-      })
-      .send({ from: organizer_account });
-    console.log("Deployed election at 0x" + result.options.address);
-
-    await web3.eth.personal.lockAccount(organizer_account);
-    console.log("Account locked");
   } catch (error) {
-    console.log("Error");
-    //res.status(400).send("Bad Request. Could not login user.");
+    res.status(501).send("Server error");
   }
 };
 
-// start the express server
+// add eligible voters
+app.post("/election/validate", organizerContract, async (req, res) => {
+  const { organizer_account, voter_accounts } = req.body;
+  try {
+    const provider = new HDWalletProvider(mnemonic, URL, organizer_account);
+    const web3 = new Web3(provider);
+    const contract = await new web3.eth.Contract(
+      abi,
+      election_storage[organizer_account]
+    );
 
-const app = express();
+    for (let address of voter_accounts) {
+      await contract.methods
+        .giveRightToVote(provider.getAddress(address))
+        .send({ from: provider.getAddress(organizer_account) });
+    }
+    res.send("successfully added all voters");
+  } catch (error) {
+    console.log(error);
+    res.status(401).send("Bad request");
+  }
+});
 
-const port = process.env.PORT || 5000;
+// starting election endpoint
+// TODO middleware to verify organizer account
+app.post("/election/start", async (req, res) => {
+  const { organizer_account, candidates, end_time, start_time } = req.body;
+  try {
+    if (!election_storage.hasOwnProperty(organizer_account)) {
+      const provider = new HDWalletProvider(mnemonic, URL, organizer_account);
+      const web3 = new Web3(provider);
+
+      console.log(provider.getAddress(organizer_account));
+
+      const contract = await new web3.eth.Contract(abi);
+      const deployTx = await contract
+        .deploy({
+          data: "0x" + bytecode,
+          arguments: [candidates, end_time, start_time],
+        })
+        .send({ from: provider.getAddress(organizer_account), gas: 3000000 });
+
+      console.log("Deployed election at " + deployTx.options.address);
+      election_storage[organizer_account] = deployTx.options.address;
+      provider.engine.stop();
+    }
+    res.send({
+      contract_address: {
+        organizer_account: election_storage[organizer_account],
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send("Invalid request");
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Listening on port ${port}...`);
+});
