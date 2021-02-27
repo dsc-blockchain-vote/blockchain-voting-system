@@ -136,7 +136,7 @@ class CreateElectionForm extends Component{
         if (name === 'deleteCandidate'){
             const candidates = this.state.candidates.filter((c) => c.id !== id);
             this.setState({ candidates });
-        }
+        }   
         else if (name === 'deleteVoter'){
             const voters = this.state.voters.filter((v) => v.id !== id);
             this.setState({ voters });
@@ -163,9 +163,9 @@ class CreateElectionForm extends Component{
 
     //stores the election details entered into a firebase database called 'election'
     createElection = () =>{
-        if (this.state.errors.title === '' && this.checkForErrors('candidate') === true && 
-        this.checkForErrors('voterName') === true && this.checkForErrors('voterID') === true && 
-        this.checkForErrors('email') === true && this.state.title && this.state.start &&
+        if (this.state.errors.title === '' && this.checkForErrors('candidate') === false && 
+        this.checkForErrors('voterName') === false && this.checkForErrors('voterID') === false && 
+        this.checkForErrors('email') === false && this.state.title && this.state.start &&
         this.state.end && this.checkForErrors('candidatesEmpty') === false && 
         this.checkForErrors('votersEmpty') === false){
                 const election = {
@@ -183,38 +183,46 @@ class CreateElectionForm extends Component{
                     })
             }
         else
-            alert('Check the input fields again for any invalid or empty entry')
+            alert("Check the input fields again for any invalid or empty entry")
     }
     
     //checks if there are no errors or no empty fields 
     checkForErrors = (name) =>{
         if (name === 'candidate'){
             for(var i=0; i < this.state.errors.candidateName.length; i++){
-                if (this.state.errors.candidateName[i] != '')
-                    return false
+                if (this.state.errors.candidateName[i] != ''){
+                    this.state.disabled = true
+                    return true
+                }
             }
-            return true
+            return false
         }
         if (name === 'voterName'){
             for(var i=0; i < this.state.errors.voterName.length; i++){
-                if (this.state.errors.voterName[i] != '')
-                    return false
+                if (this.state.errors.voterName[i] != ''){
+                    this.state.disabled = true
+                    return true
+                }
             }
-            return true
+            return false
         }
         if (name === 'voterID'){
             for(var i=0; i < this.state.errors.voterID.length; i++){
-                if (this.state.errors.voterID[i] != '')
-                    return false
+                if (this.state.errors.voterID[i] != ''){
+                    this.state.disabled = true
+                    return true
+                }
             }
-            return true
+            return false
         }
         if (name === 'email'){
             for(var i=0; i < this.state.errors.email.length; i++){
-                if (this.state.errors.email[i] != '')
-                    return false
+                if (this.state.errors.email[i] != ''){
+                    this.state.disabled = true
+                    return true
+                }
             }
-            return true
+            return false
         }
         if (name ==='candidatesEmpty'){
             if (this.state.candidates.length === 0)
@@ -271,7 +279,11 @@ class CreateElectionForm extends Component{
                         errors: this.state.errors }) }/>
                 </Grid>
                 <Grid item>
-                    <Button variant="contained" color="primary" size="large" onClick={this.createElection}>
+                    <Button 
+                        variant="contained" 
+                        color="primary" 
+                        size="large" 
+                        onClick={this.createElection}>
                         Create
                     </Button>
                 </Grid>

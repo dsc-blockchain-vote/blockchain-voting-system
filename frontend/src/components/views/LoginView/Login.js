@@ -36,13 +36,18 @@ export default function Component() {
   var [email, setEmail] = useState('');
   var [password, setPassword] = useState('');
   var [errors, setErrors] = useState({email: '', password: ''});
+  var [disabled, setDisabled] = useState(true)
 
   const handleInputChange = (e) => {
         validation(e.target.name, e.target.value)
         if (e.target.name === 'email')
           setEmail(e.target.value);
-        else
+        else if (e.target.name === 'password')
           setPassword(e.target.value);
+        if (email && password && errors.email == ''&& errors.password == '')
+          setDisabled(false)
+        else 
+          setDisabled(true)
     }
 
   const validation = (name, value) => {
@@ -56,9 +61,6 @@ export default function Component() {
   const handleSubmit = () => {
         if (email && password && errors.email === '' && errors.password === '')
           console.log('Logged in Succesfully!');
-        else
-          alert('Check the input fields again for any invalid or empty entry');
-
     }
 
         return (
@@ -104,6 +106,7 @@ export default function Component() {
                         variant="contained" 
                         color="primary" 
                         size="large" 
+                        disabled={disabled}
                         style= {{ marginLeft: 10}}
                         onClick={handleSubmit}>
                           Login
