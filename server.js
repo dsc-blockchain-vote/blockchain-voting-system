@@ -5,12 +5,10 @@ const Web3 = require("web3");
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const { abi, bytecode } = require("./compile");
 
+// load required environment variables
 const env = process.env.NODE_ENV;
-// secrets
 const mnemonic = process.env.MNEMONIC;
 const URL = process.env.URL;
-
-// account generation
 
 // start the express server
 const app = express();
@@ -27,13 +25,14 @@ if (env !== "production") {
   app.use(cors());
 }
 
-const election_storage = {}; // TODO: use firebase
+const electionStorage = {}; // TODO: use firebase
+const electionAddress = []; // TODO use firebase
 
 //middleware
-const organizerContract = (req, res, next) => {
-  const organizer_account = req.body.organizer_account;
+const OrganizerContract = (req, res, next) => {
+  const organizerAccount = req.body.organizerAccount;
   try {
-    if (election_storage.hasOwnProperty(organizer_account)) {
+    if (electionStorage.hasOwnProperty(organizerAccount)) {
       return next();
     } else {
       res.status(401).send("Election contract does not exist");
@@ -44,55 +43,108 @@ const organizerContract = (req, res, next) => {
   }
 };
 
-// add eligible voters
-app.post("/election/validate", organizerContract, async (req, res) => {
-  const { organizer_account, voter_accounts } = req.body;
+// check voter eligibility
+// TODO ensure that the voter is logged in
+app.get("/voter/election/:electionID/verify", async (req, res) => {
+  const { voterAccount } = req.body;
   try {
-    const provider = new HDWalletProvider(mnemonic, URL, organizer_account);
+    const provider = new HDWalletProvider({
+      mnemonic: mnemonic,
+      providerOrUrl: URL,
+      addressIndex: voterAccount,
+      numberOfAddresses: 1,
+    });
     const web3 = new Web3(provider);
     const contract = await new web3.eth.Contract(
       abi,
-      election_storage[organizer_account]
+      electionAddress[req.params.electionID]
     );
-
-    for (let address of voter_accounts) {
-      await contract.methods
-        .giveRightToVote(provider.getAddress(address))
-        .send({ from: provider.getAddress(organizer_account) });
-    }
-    res.send("successfully added all voters");
+    const result = await contract.methods.voters(provider.getAddress(0)).call();
+    provider.engine.stop();
+    res.send({ result: result.validVoter });
   } catch (error) {
     console.log(error);
     res.status(401).send("Bad request");
   }
 });
 
+// add eligible voters
+// TODO ensure that organizer is logged in
+app.post(
+  "/organizer/election/:electionID/validate",
+  OrganizerContract,
+  async (req, res) => {
+    const { organizerAccount, voterAccounts } = req.body;
+    try {
+      const provider = new HDWalletProvider({
+        mnemonic: mnemonic,
+        providerOrUrl: URL,
+        addressIndex: organizerAccount,
+        numberOfAddresses: 1,
+      });
+      const web3 = new Web3(provider);
+      const contract = await new web3.eth.Contract(
+        abi,
+        electionAddress[req.params.electionID]
+      );
+      const result = {};
+      for (let address of voterAccounts) {
+        let voterProvider = new HDWalletProvider({
+          mnemonic: mnemonic,
+          providerOrUrl: URL,
+          addressIndex: address,
+          numberOfAddresses: 1,
+        });
+        await contract.methods
+          .giveRightToVote(voterProvider.getAddress(0))
+          .send({ from: provider.getAddress(0) })
+          .then((result[address] = true));
+        voterProvider.engine.stop();
+      }
+      provider.engine.stop();
+      res.send(result);
+    } catch (error) {
+      console.log(error);
+      res.status(401).send("Bad request");
+    }
+  }
+);
+
 // starting election endpoint
 // TODO middleware to verify organizer account
-app.post("/election/start", async (req, res) => {
-  const { organizer_account, candidates, end_time, start_time } = req.body;
+app.post("/organizer/election/start", async (req, res) => {
+  const { organizerAccount, candidates, endTime, startTime } = req.body;
   try {
-    if (!election_storage.hasOwnProperty(organizer_account)) {
-      const provider = new HDWalletProvider(mnemonic, URL, organizer_account);
-      const web3 = new Web3(provider);
+    const provider = new HDWalletProvider({
+      mnemonic: mnemonic,
+      providerOrUrl: URL,
+      addressIndex: organizerAccount,
+      numberOfAddresses: 1,
+    });
+    const web3 = new Web3(provider);
+    const contract = await new web3.eth.Contract(abi);
+    const deployTx = await contract
+      .deploy({
+        data: "0x" + bytecode,
+        arguments: [candidates, endTime, startTime],
+      })
+      .send({ from: provider.getAddress(0), gas: 3000000 });
 
-      console.log(provider.getAddress(organizer_account));
-
-      const contract = await new web3.eth.Contract(abi);
-      const deployTx = await contract
-        .deploy({
-          data: "0x" + bytecode,
-          arguments: [candidates, end_time, start_time],
-        })
-        .send({ from: provider.getAddress(organizer_account), gas: 3000000 });
-
-      console.log("Deployed election at " + deployTx.options.address);
-      election_storage[organizer_account] = deployTx.options.address;
-      provider.engine.stop();
+    console.log("Deployed election at " + deployTx.options.address);
+    electionAddress.push(deployTx.options.address);
+    if (!electionStorage.hasOwnProperty(organizerAccount)) {
+      electionStorage[organizerAccount] = [];
     }
+    electionStorage[organizerAccount].push(
+      electionAddress.indexOf(deployTx.options.address)
+    );
+
+    provider.engine.stop();
+
     res.send({
       contract_address: {
-        organizer_account: election_storage[organizer_account],
+        electionID: electionAddress.indexOf(deployTx.options.address),
+        electionAddress: deployTx.options.address,
       },
     });
   } catch (error) {
