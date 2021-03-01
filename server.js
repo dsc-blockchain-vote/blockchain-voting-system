@@ -28,6 +28,21 @@ if (env !== "production") {
 const electionStorage = {}; // TODO: use firebase
 const electionAddress = []; // TODO use firebase
 
+//helper functions
+const voterData = async (voterAccount, address) => {
+  const provider = new HDWalletProvider({
+    mnemonic: mnemonic,
+    providerOrUrl: URL,
+    addressIndex: voterAccount,
+    numberOfAddresses: 1,
+  });
+  const web3 = new Web3(provider);
+  const contract = await new web3.eth.Contract(abi, address);
+  const result = await contract.methods.voters(provider.getAddress(0)).call();
+  provider.engine.stop();
+  return result;
+};
+
 //middleware
 const OrganizerContract = (req, res, next) => {
   const organizerAccount = req.body.organizerAccount;
@@ -43,25 +58,37 @@ const OrganizerContract = (req, res, next) => {
   }
 };
 
+// if the voter has voted then return the candidate id. If not then return false
+// TODO verify voter has logged in
+app.get("/voter/election/:electionID/", async (req, res) => {
+  const { voterAccount } = req.body;
+  try {
+    const result = await voterData(
+      voterAccount,
+      electionAddress[req.params.electionID]
+    );
+    const response = { result: false };
+    if (result.voted && result.validVoter) {
+      response.result = result.votedFor;
+    }
+    res.send(response);
+  } catch (error) {
+    console.log(error);
+    res.status(401).send("Bad request");
+  }
+});
+
 // check voter eligibility
 // TODO ensure that the voter is logged in
 app.get("/voter/election/:electionID/verify", async (req, res) => {
   const { voterAccount } = req.body;
   try {
-    const provider = new HDWalletProvider({
-      mnemonic: mnemonic,
-      providerOrUrl: URL,
-      addressIndex: voterAccount,
-      numberOfAddresses: 1,
-    });
-    const web3 = new Web3(provider);
-    const contract = await new web3.eth.Contract(
-      abi,
+    const result = await voterData(
+      voterAccount,
       electionAddress[req.params.electionID]
     );
-    const result = await contract.methods.voters(provider.getAddress(0)).call();
-    provider.engine.stop();
-    res.send({ result: result.validVoter });
+    const response = { result: result.validVoter };
+    res.send(response);
   } catch (error) {
     console.log(error);
     res.status(401).send("Bad request");
