@@ -95,6 +95,35 @@ app.get("/voter/election/:electionID/verify", async (req, res) => {
   }
 });
 
+// casting vote
+// TODO verify the voter has logged in
+app.post("/voter/election/:electionID/vote", async (req, res) => {
+  const { voterAccount, candidateID } = req.body;
+  try {
+    const provider = new HDWalletProvider({
+      mnemonic: mnemonic,
+      providerOrUrl: URL,
+      addressIndex: voterAccount,
+      numberOfAddresses: 1,
+    });
+    const web3 = new Web3(provider);
+    const contract = await new web3.eth.Contract(
+      abi,
+      electionAddress[req.params.electionID]
+    );
+    await contract.methods
+      .vote(candidateID)
+      .send({ from: provider.getAddress(0) });
+    const result = await contract.methods.candidates(candidateID).call();
+    console.log(result);
+    res.send("Voted casted");
+    provider.engine.stop();
+  } catch (error) {
+    console.log(error);
+    res.status(401).send("Bad request");
+  }
+});
+
 // add eligible voters
 // TODO ensure that organizer is logged in
 app.post(
