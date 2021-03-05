@@ -119,8 +119,14 @@ app.post("/voter/election/:electionID/vote", async (req, res) => {
     res.send("Voted casted");
     provider.engine.stop();
   } catch (error) {
-    console.log(error);
-    res.status(401).send("Bad request");
+    let response = "Bad request";
+    const msg = error.message;
+    if (msg.includes("Has no right to vote")) {
+      response = "Not a valid voter";
+    } else if (msg.includes("Already voted")) {
+      response = "Vote has already been cast";
+    }
+    res.status(401).send(response);
   }
 });
 
