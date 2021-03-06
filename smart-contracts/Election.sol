@@ -64,6 +64,29 @@ contract Election {
             );
         }
     }
+    
+    /**
+    @dev changes the elections start time if the start time is valid and the request
+    was made before the election started
+    @param _newStartTime uint storing the start time in epoch seconds
+     */
+    function setStartTime(uint256 _newStartTime) public onlyBeforeElection {
+        if(_newStartTime < endTime) {
+        startTime = _newStartTime;
+        }
+    }
+    
+    /**
+    @dev changes the elections end time if the end time is valid and the request
+    was made before the election started
+    @param _newEndTime uint storing the start time in epoch seconds
+     */
+    function setEndTime(uint256 _newEndTime) public onlyBeforeElection {
+        if(_newEndTime > startTime){
+            endTime = _newEndTime;     
+        }
+    }
+    
 
     /**
     @dev allows the organizer to give voting privilege to a voter
@@ -73,16 +96,16 @@ contract Election {
         voters[voterAddress].validVoter = true;
     }
 
+
     /**
     @dev allow valid voter to caste their votes
     @param candidateID unint representing the candidate who got the vote
      */
     function vote(uint256 candidateID) public onlyWhileOpen {
-        DataTypes.Voter memory sender = voters[msg.sender];
-        require(sender.validVoter, "Has no right to vote");
-        require(!sender.voted, "Already voted.");
-        sender.voted = true;
-        sender.votedFor = candidateID;
+        require(voters[msg.sender].validVoter, "Has no right to vote");
+        require(!voters[msg.sender].voted, "Already voted.");
+        voters[msg.sender].voted = true;
+        voters[msg.sender].votedFor = candidateID;
         candidates[candidateID].voteCount += 1;
     }
 
@@ -130,33 +153,14 @@ contract Election {
                     id: candidates.length
                 }));
     }
+
     /**
     @dev removes the specified candidate from the election 
     @param candidateID the ID of the candidate to be removed
     
-    NOTE: this version replaces the specified candidate by replacing it with a Deleted candidate object. 
-    It is significantly more gas inefficient however may introduce problems if the organizer
-    removes a large enough number of candidates and wastes memory on the blockchain.
-     */
-    function removeCandidateA(uint candidateID) public {
-        candidates[candidateID] = DataTypes.Candidate({
-                    name: "Deleted",
-                    voteCount: 0,
-                    id: 9999
-                });
-    }
-    /**
-    @dev removes the specified candidate from the election 
-    @param candidateID the ID of the candidate to be removed
-    
-    NOTE: this version deletes the specified candidate in the array 
-    and then adjusts the index of all other candidates within the array
-    such that at index i holds the candidate with id i.
-    
-    This is very gas inefficient
      */
     
-    function removeCandidateB(uint candidateID) public {
+    function removeCandidate(uint candidateID) public onlyBeforeElection {
         for (uint i = candidateID; i < candidates.length - 1; i++) {
             candidates[i] = candidates[i + 1];
             candidates[i].id--;
