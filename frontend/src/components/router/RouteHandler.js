@@ -9,7 +9,8 @@ export default function RouteHandler() {
         <Switch>
             <Route path="/create" component={CreateElectionView}/>
             <Route path="/ballot" component={BallotView}/>
-            <Route path="/elections" component = {ElectionListView}/>
+            <Route exact path="/elections" component = {ElectionListView}/>
+            <Route exact path="/elections/:id" component = {CreateElectionView}/>
         </Switch>
     )
 }

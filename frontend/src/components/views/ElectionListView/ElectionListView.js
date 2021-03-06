@@ -12,8 +12,8 @@ import Divider from "@material-ui/core/Divider";
 import Container from "@material-ui/core/Container";
 import DateFnsUtils from "@date-io/date-fns";
 import { format } from "date-fns";
-import { MemoryRouter as Router } from 'react-router';
-import { Link as RouterLink } from 'react-router-dom';
+import { Router } from "react-router";
+import { Link } from "react-router-dom";
 import { Button, Grid } from "@material-ui/core";
 
 const useStyles = makeStyles({
@@ -164,27 +164,32 @@ function TabPanel(props) {
 function ElectionList(props) {
     const classes = useStyles();
     return (
-        <Router>
-            <div>
-                {props.elections.map((c) => {
-                    return (
-                        <Paper className={classes.paper}>
-                            <Grid container alignItems='center' spacing={3}>
-                                <Grid item xs={10}>
-                                    <Typography variant="h6">{c.title}</Typography>
-                                    <Typography variant="subtitle2">
-                                        {format(c.start, "MM/dd/yyyy")} to{" "}
-                                        {format(c.end, "MM/dd/yyyy")}
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={2}>
-                                    <Button variant="contained" color="primary" component={RouterLink} to={`elections/${c.id}`}>View Election</Button>
-                                </Grid>
+        <div>
+            {props.elections.map((c) => {
+                return (
+                    <Paper className={classes.paper}>
+                        <Grid container alignItems="center" spacing={3}>
+                            <Grid item xs={10}>
+                                <Typography variant="h6">{c.title}</Typography>
+                                <Typography variant="subtitle2">
+                                    {format(c.start, "MM/dd/yyyy")} to{" "}
+                                    {format(c.end, "MM/dd/yyyy")}
+                                </Typography>
                             </Grid>
-                        </Paper>
-                    );
-                })}
+                            <Grid item xs={2}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    component={Link}
+                                    to={`/elections/${c.id}`}
+                                >
+                                    View Election
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Paper>
+                );
+            })}
         </div>
-        </Router>
     );
 }
