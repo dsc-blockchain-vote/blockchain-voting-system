@@ -5,8 +5,17 @@ import List from "@material-ui/core/List";
 import Divider from "@material-ui/core/Divider";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
-
+import PropTypes from 'prop-types';
 import UserInfo from "./UserInfo";
+
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import AllInboxIcon from '@material-ui/icons/AllInbox';
+import BallotIcon from '@material-ui/icons/Ballot';
+import CreateIcon from '@material-ui/icons/Create';
+import SettingsIcon from '@material-ui/icons/Settings';
+
+import { Route, MemoryRouter } from 'react-router';
+import { Link as RouterLink } from 'react-router-dom';
 
 const drawerWidth = 240;
 
@@ -50,30 +59,41 @@ export default function LeftDrawer() {
             <div className={classes.toolbar} />
             <UserInfo name="Current User" id="studentid"/>
 
-            {/* Everything past this point should be put into its own menu component after */}
             <Divider />
             <List>
-                {[
-                    "Placeholder",
-                    "Placeholder",
-                    "Placeholder",
-                    "Placeholder",
-                ].map((text, index) => (
-                    <ListItem button key={text}>
-                        <ListItemText primary={text} />
-                    </ListItem>
-                ))}
+                <ListItemLink to="/elections" primary="Elections List" icon={<AllInboxIcon />} />
+                <ListItemLink to="/create" primary="Create Election" icon={<CreateIcon />} />
+                <ListItemLink to="/ballot" primary="Ballot" icon={<BallotIcon />} />
+
             </List>
             <Divider />
             <List>
-                {["Placeholder", "Placeholder", "Placeholder"].map(
-                    (text, index) => (
-                        <ListItem button key={text}>
-                            <ListItemText primary={text} />
-                        </ListItem>
-                    )
-                )}
+                <ListItemLink to="#" primary="Settings" icon={<SettingsIcon />} />
             </List>
         </Drawer>
     );
 }
+
+function ListItemLink(props) {
+    const { icon, primary, to } = props;
+  
+    const renderLink = React.useMemo(
+      () => React.forwardRef((itemProps, ref) => <RouterLink to={to} ref={ref} {...itemProps} />),
+      [to],
+    );
+  
+    return (
+      <li>
+        <ListItem button component={renderLink}>
+          {icon ? <ListItemIcon>{icon}</ListItemIcon> : null}
+          <ListItemText primary={primary} />
+        </ListItem>
+      </li>
+    );
+  }
+  
+  ListItemLink.propTypes = {
+    icon: PropTypes.element,
+    primary: PropTypes.string.isRequired,
+    to: PropTypes.string.isRequired,
+  };
