@@ -125,21 +125,17 @@ contract Election {
     function winnerCandidateName() public returns (string memory winnerName) {
         FirstPastThePost countMethod = new FirstPastThePost(candidates);
         uint256[10] memory winners = countMethod.calculate();
-        if (winners.length > 1) {
-            winnerName = string(abi.encodePacked("tie: ", candidates[winners[0]].name));
-            for (uint256 i = 1; i < winners.length; i++) {
-                // abi.encodePacked(arg) is an ABI encoding function that concatinates 2 strings together;
-                if(winners[i] == 0 && i != 0){
-                    break;
-                }
-                winnerName = string(
-                    abi.encodePacked(winnerName,", ", candidates[winners[i]].name)
-                );
+        winnerName = string(candidates[winners[0]].name);
+        for (uint256 i = 1; i < winners.length; i++) {
+            // abi.encodePacked(arg) is an ABI encoding function that concatinates 2 strings together;
+            if(winners[i] == 0 && i != 0){
+                break;
             }
-            
-        } else {
-            winnerName = candidates[winners[0]].name;
+            winnerName = string(
+                abi.encodePacked(winnerName,",", candidates[winners[i]].name)
+            );
         }
+
     }
     /**
      @dev adds the candidate with the given name to the election. 
