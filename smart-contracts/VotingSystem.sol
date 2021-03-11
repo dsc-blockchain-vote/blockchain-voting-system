@@ -19,20 +19,15 @@ abstract contract VotingSystem {
      */
     function getWinner() external view returns (string memory _winnerName) {
         uint256[10] memory winners = this.calculate();
-        if (winners.length > 1) {
-            _winnerName = "tie: ";
-            for (uint256 i = 0; i < winners.length; i++) {
-                // abi.encodePacked(arg) is an ABI encoding function that concatinates 2 strings together;
-                _winnerName = string(
-                    abi.encodePacked(
-                        _winnerName,
-                        candidates[winners[i]].name,
-                        " "
-                    )
-                );
-            }
-        } else {
-            _winnerName = candidates[winners[0]].name;
+        for (uint256 i = 0; i < winners.length; i++) {
+            // abi.encodePacked(arg) is an ABI encoding function that concatinates 2 strings together;
+            _winnerName = string(
+                abi.encodePacked(
+                    _winnerName,
+                    candidates[winners[i]].name,
+                    ","
+                )
+            );
         }
     }
 }
