@@ -218,3 +218,79 @@ app.post("/organizer/election/start", async (req, res) => {
 app.listen(port, () => {
   console.log(`Listening on port ${port}...`);
 });
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------
+// add candidate to given election
+// TODO middleware to verify organizer account
+
+app.post("/voter/election/:electionID/addCandidate", async (req, res) => {
+  const { organizerAccount, candidateName } = req.body;
+  try {
+    const provider = new HDWalletProvider({
+      mnemonic: mnemonic,
+      providerOrUrl: URL,
+      addressIndex: organizerAccount,
+      numberOfAddresses: 1,
+    });
+    const web3 = new Web3(provider);
+    const contract = await new web3.eth.Contract(
+      abi,
+      electionAddress[req.params.electionID]
+    );
+    await contract.methods
+      .addCandidate(candidateName)
+      .send({ from: provider.getAddress(0) });
+
+    const result = await contract.methods.candidates(candidateID).call();
+
+    console.log(result);
+    res.send("Candidate added");
+    provider.engine.stop();
+  } catch (error) {
+    let response = "Bad request";
+    const msg = error.message;
+    if (msg.includes("Election start time has passed")) {
+      response = "Election start time has passed";
+    } 
+    res.status(401).send(response);
+  }
+});
+
+// remove candidate to given election
+// TODO middleware to verify organizer account
+
+app.post("/voter/election/:electionID/removeCandidate", async (req, res) => {
+  const { organizerAccount, candidateID } = req.body;
+  try {
+    const provider = new HDWalletProvider({
+      mnemonic: mnemonic,
+      providerOrUrl: URL,
+      addressIndex: organizerAccount,
+      numberOfAddresses: 1,
+    });
+    const web3 = new Web3(provider);
+    const contract = await new web3.eth.Contract(
+      abi,
+      electionAddress[req.params.electionID]
+    );
+    await contract.methods
+      .removeCandidate(candidateID)
+      .send({ from: provider.getAddress(0) });
+
+    const result = await contract.methods.candidates(candidateID).call();
+
+    console.log(result);
+    res.send("Candidate removed");
+    provider.engine.stop();
+  } catch (error) {
+    let response = "Bad request";
+    const msg = error.message;
+    if (msg.includes("Election start time has passed")) {
+      response = "Election start time has passed";
+    } 
+    res.status(401).send(response);
+  }
+});
+
+
+
