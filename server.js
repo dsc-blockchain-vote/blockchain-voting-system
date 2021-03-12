@@ -25,6 +25,44 @@ if (env !== "production") {
   app.use(cors());
 }
 
+
+
+// Set the configuration for the voting system app
+var config = {
+  apiKey: "AIzaSyCrn5VNo0R6OjKqDQ2UtYpqSgJjLuAd6Lo",
+  authDomain: "dsc-blockchain-voting-system.firebaseapp.com",
+  databaseURL: "https://dsc-blockchain-voting-system-default-rtdb.firebaseio.com/",
+  projectId: "dsc-blockchain-voting-system",
+  storageBucket: "dsc-blockchain-voting-system.appspot.com",
+  messagingSenderId: "150101738021",
+  appId: "1:150101738021:web:9253084d5aaaf4f69ff5cc",
+  measurementId: "G-H6DPGQJXZH"
+};
+firebase.initializeApp(config);
+// Get a reference to the database service
+var database = firebase.database();
+
+// Helper to write election with the given name and ID    to the firebase
+// P.S should we also store an authentication method? ie: email
+
+function writeElectionData(electionName, electionID, electionAddress) {
+  firebase.database().ref('election/' + electionName).set({
+    electionName: electionName,
+    electionID: electionID,
+    electionAddress: electionAddress
+  });
+} 
+
+function getElectionAddress(electionName, electionID){
+  var electionRef = database.ref('election/' + electionName + '/' + electionAddress);
+  electionRef.on('value', (snapshot) => {  
+  const address = snapshot.val();
+  console.log(address)
+  return address
+});
+}
+
+
 const electionStorage = {}; // TODO: use firebase
 const electionAddress = []; // TODO use firebase
 
