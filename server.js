@@ -223,7 +223,7 @@ app.listen(port, () => {
 // add candidate to given election
 // TODO middleware to verify organizer account
 
-app.post("/voter/election/:electionID/addCandidate", async (req, res) => {
+app.post("organizer/election/:electionID/addCandidate", async (req, res) => {
   const { organizerAccount, candidateName } = req.body;
   try {
     const provider = new HDWalletProvider({
@@ -241,8 +241,6 @@ app.post("/voter/election/:electionID/addCandidate", async (req, res) => {
       .addCandidate(candidateName)
       .send({ from: provider.getAddress(0) });
 
-    const result = await contract.methods.candidates(candidateID).call();
-
     console.log(result);
     res.send("Candidate added");
     provider.engine.stop();
@@ -259,7 +257,7 @@ app.post("/voter/election/:electionID/addCandidate", async (req, res) => {
 // remove candidate to given election
 // TODO middleware to verify organizer account
 
-app.post("/voter/election/:electionID/removeCandidate", async (req, res) => {
+app.post("organizer/election/:electionID/removeCandidate", async (req, res) => {
   const { organizerAccount, candidateID } = req.body;
   try {
     const provider = new HDWalletProvider({
@@ -277,9 +275,7 @@ app.post("/voter/election/:electionID/removeCandidate", async (req, res) => {
       .removeCandidate(candidateID)
       .send({ from: provider.getAddress(0) });
 
-    const result = await contract.methods.candidates(candidateID).call();
-
-    console.log(result);
+    console.log("Candidate removed");
     res.send("Candidate removed");
     provider.engine.stop();
   } catch (error) {
@@ -293,4 +289,36 @@ app.post("/voter/election/:electionID/removeCandidate", async (req, res) => {
 });
 
 
+// returns array of candidate(s) name(s) for the given election
+// TODO middleware to verify organizer account
 
+app.post("organizer/election/:electionID/winner", async (req, res) => {
+  const { organizerAccount, candidateID } = req.body;
+  try {
+    const provider = new HDWalletProvider({
+      mnemonic: mnemonic,
+      providerOrUrl: URL,
+      addressIndex: organizerAccount,
+      numberOfAddresses: 1,
+    });
+    const web3 = new Web3(provider);
+    const contract = await new web3.eth.Contract(
+      abi,
+      electionAddress[req.params.electionID]
+    );
+    result = await contract.methods
+      .calculateWinnerName()
+      .send({ from: provider.getAddress(0) });
+
+    console.log(result);
+    res.send(result);
+    provider.engine.stop();
+  } catch (error) {
+    let response = "Bad request";
+    const msg = error.message;
+    if (msg.includes("Election end time has not passed")) {
+      response = "Election end time has not passed";
+    } 
+    res.status(401).send(response);
+  }
+});
