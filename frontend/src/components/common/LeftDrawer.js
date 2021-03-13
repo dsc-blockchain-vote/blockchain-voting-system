@@ -64,7 +64,8 @@ export default function LeftDrawer() {
                 <ListItemLink to="/elections" primary="Elections List" icon={<AllInboxIcon />} />
                 <ListItemLink to="/create" primary="Create Election" icon={<CreateIcon />} />
                 <ListItemLink to="/ballot" primary="Ballot" icon={<BallotIcon />} />
-
+                <ListItemLink to="/login" primary="Login" />
+                <ListItemLink to="/signup" primary="Sign Up" />
             </List>
             <Divider />
             <List>
