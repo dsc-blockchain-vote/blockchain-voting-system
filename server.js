@@ -35,9 +35,6 @@ if (env !== "production") {
   app.use(cors());
 }
 
-const electionStorage = {}; // TODO: use firebase
-const electionAddress = []; // TODO use firebase
-
 //helper functions
 const voterData = async (voterAccount, address) => {
   const provider = new HDWalletProvider({
@@ -82,51 +79,99 @@ const verifyUser = (res, req, next) => {
     });
 };
 
-// if the voter has voted then return the candidate id. If not then return false
+// if organizer account is making a request, send all election data
+// if user account is making request, send the candidate id they voted for
+// or send false if they haven't voted or are not valid voters
 app.get("/api/election/:electionID", verifyUser, async (req, res) => {
-  if (req.isOrganizer){
-    res.status(400).send("bad request");
-    return;
-  }
-  const { userID } = req.body;
+  const { userID, isOrganizer } = req.body;
   try {
-    const userRef = db.ref("users/" + userID);
-    let voterAccount = null;
-    userRef.on("value", (snapshot) => {
-      voterAccount = snapshot.val().account;
-    });
-    if(voterAccount === null){
-      res.status(400).send("bad request");
-      return;
+    
+    if (isOrganizer){
+      const electionRef = db.ref("elections/" + req.params.electionID);
+      let electionData = null;
+      electionRef.on("value", (snapshot) => {
+        if (snapshot.val().organizerID === userID){
+          electionData = snapshot.val();
+        }
+      });
+      if (electionData === null){
+        res.status(400).send("bad request");
+        return;
+      }
+      res.send(electionData);
     }
-    const result = await voterData(
-      voterAccount,
-      req.params.electionID
-    );
-    const response = { result: false };
-    if (result.voted && result.validVoter) {
-      response.result = result.votedFor;
+    else{
+      const userRef = db.ref("users/" + userID);
+      let voterAccount = null;
+      userRef.on("value", (snapshot) => {
+        voterAccount = snapshot.val().account;
+      });
+      if(voterAccount === null){
+        res.status(400).send("bad request");
+        return;
+      }
+      const result = await voterData(
+        voterAccount,
+        req.params.electionID
+      );
+      const response = { result: false };
+      if (result.voted && result.validVoter) {
+        response.result = result.votedFor;
+      }
+      res.send(response);
     }
-    res.send(response);
   } catch (error) {
     console.log(error);
     res.status(400).send("Bad request");
   }
 });
 
-// check voter eligibility
-app.get("/voter/election/:electionID/verify", verifyUser, async (req, res) => {
-  const { voterAccount } = req.body;
+// return all elections
+// if user is organizer, return all data of the elections owned by organizer
+// if user is voter, return all elections for which the user is eligible. Data for each election
+// returned here contains everything except list of voters
+app.get("/api/election/", verifyUser, async (req, res) => {
+  const { voterAccount, userID, isOrganizer } = req.body;
   try {
-    const result = await voterData(
-      voterAccount,
-      electionAddress[req.params.electionID]
-    );
-    const response = { result: result.validVoter };
-    res.send(response);
+    let electionData = {};
+    const electionRef = db.ref("elections/");
+    electionRef.on("value", (snapshot) => {
+      snapshot.forEach((childSnapshot) => {
+        data = childSnapshot.val();
+        electionData[data.electionID] = data;
+      });     
+    });
+    if (isOrganizer){
+      let organizerElectionData = {};
+      for (let id in electionData){
+        if (electionData[id].organizerID === userID){
+          organizerElectionData[id] = electionData[id];
+        }
+      }
+      res.send(organizerElectionData);
+    }
+    else{
+      let voterElectionData = {};
+      for (let id in electionData){
+        let result = await voterData(
+          voterAccount,
+          electionAddress[req.params.electionID]
+        );
+        if (result.validVoter){
+          voterElectionData[id] = {
+            candidates: electionData[id].candidates,
+            startTime: electionData[id].startTime,
+            endTime: electionData[id].endTime,
+            electionName: electionData[id].name,
+            organizerName: electionData[id].organizerName
+          };
+        }
+      }
+      res.send(response);
+    }
   } catch (error) {
     console.log(error);
-    res.status(401).send("Bad request");
+    res.status(400).send("Bad request");
   }
 });
 
