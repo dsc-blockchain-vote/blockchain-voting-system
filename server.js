@@ -1,4 +1,10 @@
+
 "use strict";
+var firebase = require('firebase');
+var firebase = require('firebase/app');
+var current = []
+require('firebase/database');
+
 require("dotenv").config();
 const express = require("express");
 const Web3 = require("web3");
@@ -45,22 +51,124 @@ var database = firebase.database();
 // Helper to write election with the given name and ID    to the firebase
 // P.S should we also store an authentication method? ie: email
 
-function writeElectionData(electionName, electionID, electionAddress) {
-  firebase.database().ref('election/' + electionName).set({
+function writeElectionData(electionName, electionID, electionAddress, startTime, endTime) {
+  firebase.database().ref('elections/' + electionID).set({
     electionName: electionName,
     electionID: electionID,
-    electionAddress: electionAddress
+    electionAddress: electionAddress,
+    startTime: startTime,
+    endTime: endTime
   });
 } 
 
-function getElectionAddress(electionName, electionID){
-  var electionRef = database.ref('election/' + electionName + '/' + electionAddress);
-  electionRef.on('value', (snapshot) => {  
-  const address = snapshot.val();
-  console.log(address)
-  return address
-});
+// returns an array of currently occuring elections
+function currentElections(){
+  // current epoch time
+  var currentElectionTime = Math.floor(new Date().getTime()/1000.0)
+  var AllElections = []
+  var currentElection = []
+  var times;
+  let electionRefer = database.ref('elections/');
+
+  electionRefer.on('value', (snapshot) => {   
+    let temp = snapshotToArray(snapshot, AllElections)
+    for(var i = 0; i < temp.length; i++){
+      times = getElectionTimes(temp[i].electionID)
+      times.sort()
+      if((times[0] <= currentElectionTime) && (currentElectionTime <= times[1])){
+        currentElection.push(temp[i])
+      }
+    }
+
+  });
+  return currentElection
 }
+
+// creates an array from a snapshot in firebase
+function snapshotToArray(snapshot, arr) {
+
+  snapshot.forEach(function(childSnapshot) {
+      var item = childSnapshot.val()
+      item.key = childSnapshot.key
+
+      arr.push(item);
+  });
+  return arr
+};
+
+// updates election start time
+function editElectionStartTime(electionID, newStartTime){
+  var updates = {}
+  updates['elections/' + electionID + '/startTime'] = newStartTime
+  return firebase.database().ref().update(updates);
+}
+
+// updates elections end time
+function editElectionEndTime(electionID, newEndTime){
+  var updates = {}
+  updates['elections/' + electionID + '/endTime'] = newEndTime
+  return firebase.database().ref().update(updates);
+}
+
+// Returns an array witht he start and the end date of the election
+function getElectionTimes(electionID){
+  var times = []
+
+  var electionRef = database.ref('elections/' + electionID + '/startTime');
+  electionRef.on('value', (snapshot) => {  
+  var val = snapshot.val()
+  times.push(val)
+  });
+
+  var electionRef = database.ref('elections/' + electionID + '/endTime');
+  electionRef.on('value', (snapshot) => {  
+  times.push(snapshot.val())
+  });
+return times
+}
+
+// returns elections address
+function getElectionAddress(electionID){
+  var address
+  var electionRef = database.ref('elections/' + electionID + '/electionAddress');
+  electionRef.on('value', (snapshot) => {  
+  address = snapshot.val();
+});
+return address
+}
+
+function testFirebase(){
+  var time = Math.floor(new Date().getTime()/1000.0)
+  var name = "TestElection"
+  var id = 1
+  var address = "sdfh98waehfaiu"
+  var newStartTime = -100
+  var newEndTime = -1
+  writeElectionData(name, id, address, 0, 5*time)
+  var curr = currentElections()
+  setTimeout(() => { console.log(curr); }, 10000);
+}
+function testreadwrite(){
+  var time = Math.floor(new Date().getTime()/1000.0)
+  var name = "TestElection"
+  var id = 1
+  var address = "sdfh98waehfaiu"
+  var newStartTime = -100
+  var newEndTime = -1
+  writeElectionData(name, id, address, 69, 420)
+  var y = getElectionAddress(id)
+  if(y != address){
+    console.log("wrong address")
+    console.log("address is " + y)
+  }
+  editElectionStartTime(id, newStartTime)
+  editElectionEndTime(id, newEndTime)
+  var times = getElectionTimes(id)
+  if (!(times.includes(newStartTime) && times.includes(newEndTime))){
+    console.log("incorrect times retrieved")
+  }
+}
+testFirebase()
 
 
 const electionStorage = {}; // TODO: use firebase
@@ -98,7 +206,7 @@ const OrganizerContract = (req, res, next) => {
 
 // if the voter has voted then return the candidate id. If not then return false
 // TODO verify voter has logged in
-app.get("/voter/election/:electionID/", async (req, res) => {
+app.get("/voter/elections/:electionID/", async (req, res) => {
   const { voterAccount } = req.body;
   try {
     const result = await voterData(
@@ -118,7 +226,7 @@ app.get("/voter/election/:electionID/", async (req, res) => {
 
 // check voter eligibility
 // TODO ensure that the voter is logged in
-app.get("/voter/election/:electionID/verify", async (req, res) => {
+app.get("/voter/elections/:electionID/verify", async (req, res) => {
   const { voterAccount } = req.body;
   try {
     const result = await voterData(
@@ -135,7 +243,7 @@ app.get("/voter/election/:electionID/verify", async (req, res) => {
 
 // casting vote
 // TODO verify the voter has logged in
-app.post("/voter/election/:electionID/vote", async (req, res) => {
+app.post("/voter/elections/:electionID/vote", async (req, res) => {
   const { voterAccount, candidateID } = req.body;
   try {
     const provider = new HDWalletProvider({
@@ -171,7 +279,7 @@ app.post("/voter/election/:electionID/vote", async (req, res) => {
 // add eligible voters
 // TODO ensure that organizer is logged in
 app.post(
-  "/organizer/election/:electionID/validate",
+  "/organizer/elections/:electionID/validate",
   OrganizerContract,
   async (req, res) => {
     const { organizerAccount, voterAccounts } = req.body;
@@ -212,7 +320,7 @@ app.post(
 
 // starting election endpoint
 // TODO middleware to verify organizer account
-app.post("/organizer/election/start", async (req, res) => {
+app.post("/organizer/elections/start", async (req, res) => {
   const { organizerAccount, candidates, endTime, startTime } = req.body;
   try {
     const provider = new HDWalletProvider({
@@ -261,7 +369,7 @@ app.listen(port, () => {
 // add candidate to given election
 // TODO middleware to verify organizer account
 
-app.post("organizer/election/:electionID/addCandidate", async (req, res) => {
+app.post("organizer/elections/:electionID/addCandidate", async (req, res) => {
   const { organizerAccount, candidateName } = req.body;
   try {
     const provider = new HDWalletProvider({
@@ -295,7 +403,7 @@ app.post("organizer/election/:electionID/addCandidate", async (req, res) => {
 // remove candidate to given election
 // TODO middleware to verify organizer account
 
-app.post("organizer/election/:electionID/removeCandidate", async (req, res) => {
+app.post("organizer/elections/:electionID/removeCandidate", async (req, res) => {
   const { organizerAccount, candidateID } = req.body;
   try {
     const provider = new HDWalletProvider({
@@ -330,7 +438,7 @@ app.post("organizer/election/:electionID/removeCandidate", async (req, res) => {
 // returns array of candidate(s) name(s) for the given election
 // TODO middleware to verify organizer account
 
-app.post("organizer/election/:electionID/winner", async (req, res) => {
+app.post("organizer/elections/:electionID/winner", async (req, res) => {
   const { organizerAccount, candidateID } = req.body;
   try {
     const provider = new HDWalletProvider({
