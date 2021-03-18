@@ -78,14 +78,17 @@ const getElectionData = async (electionID, isOrganizer) => {
   if (isOrganizer) {
     return data;
   } else {
-    return {
+    let temp = {
       candidates: data.candidates,
       endTime: epochToHuman(data.endTime),
       startTime: epochToHuman(data.startTime),
       electionName: data.electionName,
       organizerName: data.organizerName,
-      address: data.address,
     };
+    if (data.hasOwnProperty("address")) {
+      temp.address = data.address;
+    }
+    return temp;
   }
 };
 
@@ -230,7 +233,7 @@ app.get("/api/election/:electionID", verifyUser, async (req, res) => {
       res.send(response);
     }
   } catch (error) {
-    res.status(400).send("Bad request");
+    res.status(400).send("bad request");
   }
 });
 
@@ -284,7 +287,7 @@ app.get("/api/election/", verifyUser, async (req, res) => {
       res.send(voterElectionData);
     }
   } catch (error) {
-    res.status(400).send("Bad request");
+    res.status(400).send("bad request");
   }
 });
 
@@ -320,7 +323,7 @@ app.put("/api/election/:electionID/vote", verifyUser, async (req, res) => {
     res.send({ "transaction hash": voteTx.transactionHash });
     provider.engine.stop();
   } catch (error) {
-    let response = "Bad request";
+    let response = "bad request";
     const msg = error.message;
     if (msg.includes("Has no right to vote")) {
       response = "Not a valid voter";
@@ -359,7 +362,7 @@ app.put("/api/election/:electionID/validate", verifyUser, async (req, res) => {
 });
 
 // starting election endpoint
-app.put("/api/election/:electionID/start", verifyUser, async (req, res) => {
+app.put("/api/election/:electionID/deploy", verifyUser, async (req, res) => {
   const { userID, isOrganizer } = req.body;
   try {
     const electionID = req.params.electionID;
@@ -371,7 +374,7 @@ app.put("/api/election/:electionID/start", verifyUser, async (req, res) => {
     const allElectionData = await getElectionData(electionID, isOrganizer);
     let electionData = {};
     if (allElectionData.hasOwnProperty("address")) {
-      res.status(400).send("election already deployed");
+      res.status(206).send({ electionAddress: allElectionData.address });
       return;
     }
     if (
@@ -387,7 +390,7 @@ app.put("/api/election/:electionID/start", verifyUser, async (req, res) => {
       electionData.validVoters = allElectionData.validVoters;
     }
     if (organizerAccount === null || electionData === {}) {
-      res.status(400).send("Bad request");
+      res.status(400).send("bad request");
       return;
     }
     const provider = new HDWalletProvider({
@@ -423,11 +426,9 @@ app.put("/api/election/:electionID/start", verifyUser, async (req, res) => {
     provider.engine.stop();
 
     res.send({
-      contract_address: {
-        electionID: electionID,
-        electionAddress: deployTx.options.address,
-        invalidVoterIDs: invalidVoterIDs,
-      },
+      electionID: electionID,
+      electionAddress: deployTx.options.address,
+      invalidVoterIDs: invalidVoterIDs,
     });
   } catch (error) {
     res.status(400).send("bad request");
@@ -437,7 +438,7 @@ app.put("/api/election/:electionID/start", verifyUser, async (req, res) => {
 // login end point
 app.post("/api/login", async (req, res) => {
   const idToken = req.body.idToken.toString();
-  const expiresIn = 30 * 60 * 1000; // session cookie expires in 30 minutes
+  const expiresIn = 59 * 60 * 1000; // session cookie expires in 59 minutes
   admin
     .auth()
     .createSessionCookie(idToken, { expiresIn })
@@ -445,10 +446,10 @@ app.post("/api/login", async (req, res) => {
       (sessionCookie) => {
         const options = { maxAge: expiresIn, httpOnly: true };
         res.cookie("session", sessionCookie, options);
-        res.end(JSON.stringify({ status: "Success" }));
+        res.end("Success");
       },
       (error) => {
-        res.status(401).send("unauthorized");
+        res.status(401).send("Unauthorized");
       }
     );
 });
@@ -484,7 +485,7 @@ app.post("/api/register", async (req, res) => {
 
     res.send("User successfully registered");
   } catch (error) {
-    res.status(400).send("Bad request");
+    res.status(400).send("bad request");
   }
 });
 
