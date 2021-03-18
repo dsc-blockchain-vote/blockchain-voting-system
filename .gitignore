@@ -1,8 +1,8 @@
 # environment variables
-.env
+#.env
 
 # Dependency directories
 node_modules/
 
 #keys
-service-account.json
+#service-account.json
