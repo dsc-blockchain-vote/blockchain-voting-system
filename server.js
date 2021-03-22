@@ -449,7 +449,11 @@ app.post("/api/login", async (req, res) => {
         res.end("Success");
       },
       (error) => {
-        res.status(401).send("Unauthorized");
+        res.status(401);
+        if (error.hasOwnProperty("message")) {
+          res.send(error.message);
+        }
+        res.send("Unauthorized");
       }
     );
 });
@@ -485,7 +489,12 @@ app.post("/api/register", async (req, res) => {
 
     res.send("User successfully registered");
   } catch (error) {
-    res.status(400).send("bad request");
+    res.status(400);
+    if (error.hasOwnProperty("message")) {
+      res.send(error.message);
+    } else {
+      res.send("bad request");
+    }
   }
 });
 
