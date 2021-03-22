@@ -175,7 +175,8 @@ function ElectionList(props) {
                                 </Typography>
                             </Grid>
                             <Grid item xs={2}>
-                                <Button variant="contained" color="primary" component={Link} to={`elections/${c.id}`}>View Election</Button>
+                                <Button variant="contained" color="primary" component={Link} to={`elections/${c.id}`} >
+                                    View Election</Button>
                             </Grid>
                         </Grid>
                     </Paper>

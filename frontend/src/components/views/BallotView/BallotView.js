@@ -9,31 +9,48 @@ import Paper from "@material-ui/core/Paper";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import Typography from "@material-ui/core/Typography";
-import firebaseDb from "../../../firebase";
 import React, { Component, useState, useEffect } from "react";
+import axios from "axios";
 
-export default function BallotView() {
+export default function BallotView(props) {
 
-    const [title, setTitle] = useState('Election 1');
+    const [id, setId] = useState(props.match.params.id);
+    const [title, setTitle] = useState(id?`Election ${id}`:"Election");
     const [otherEnabled, setOtherEnabled] = useState(true);
     const [candidates, setCandidates] = useState([]);
+    var [vote, setVote] = useState(null);
+
+     useEffect(() => {
+        axios.get(`http://localhost:5000/${id}`)    
+        .then(response => {
+            setCandidates(response.data.candidates);
+        })
+        .catch(error => {
+            console.log(error);
+          })
+        checkVoted();
+    }, []);
+
+    const checkVoted = () => {
+        axios.get(`http://localhost:5000//voter/election/${id}/`)
+        .then(response => {
+            setVote(response.data.result);
+        })    
+    }
 
     const submitForm = (event, value) => {
         event.preventDefault();
-        console.log(value);
+        console.log({id, value})
+        axios.post(`http://localhost:5000/voter/elections/${id}/vote`, value)
+            .then(response => {
+                event.preventDefault();
+                console.log(value);
+            })
+            .catch(error => {
+              console.log(error);
+            }) 
     };
-
-    useEffect(() => {
-        firebaseDb.child('election').on('value', snapshot => {
-            const data = snapshot.val();
-            const tempList = [];
-            for (let id in data) {
-                tempList.push(data[id]);
-            }
-            setCandidates(tempList[1].candidates);
-        })
-    }, []);
-
+ 
     return (
         <Container maxWidth="lg">
             <Paper>
@@ -50,6 +67,7 @@ export default function BallotView() {
 
                                 candidates={candidates}
                                 other={otherEnabled}
+                                vote= {vote != false? vote:""}
                             />
                         </Grid>
                     </Grid>
@@ -61,7 +79,7 @@ export default function BallotView() {
 
 class BallotList extends Component {
     state = {
-        value: "",
+        value: this.props.vote,
         disabled: true,
     };
 

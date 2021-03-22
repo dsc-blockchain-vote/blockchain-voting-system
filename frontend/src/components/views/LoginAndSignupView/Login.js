@@ -7,6 +7,7 @@ import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 import '../../../App.css';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { makeStyles } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
@@ -55,14 +56,21 @@ export default function Component() {
       if (name === 'email')
         errors.email = (emailRegex.test(value))? '': 'Invalid email ID';
       else if (name === 'password'){
-        errors.password = value.length === 0? 'Password should not be empty':'';
+        errors.password = value.length < 6? 'Password should be atleast 6 characters long':'';
       }
   }
 
   const handleSubmit = () => {
         if (email && password && errors.email === '' && errors.password === ''){
-          console.log('Logged in Succesfully!');
-          window.location.href = '/elections'
+            let data = {email, password}; 
+            axios.post('http://localhost:5000/', data)
+            .then(response => {
+              console.log('Logged in Succesfully!');
+              window.location.href = '/elections'
+            })
+            .catch(error => {
+              console.log(error);
+            })
         }
     }
 

@@ -6,7 +6,7 @@ import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 import '../../../App.css';
-import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { makeStyles } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
@@ -67,26 +67,32 @@ export default function Signup() {
           else if (/^[a-zA-Z\s]+$/.test(value))
             errors.firstName = '';
         }
-      if (name === 'lastName'){
-          if (value.length === 0)
-            errors.lastName = 'Last name should not be empty!';
-          else if (!/^[a-zA-Z\s]+$/.test(value))
-            errors.lastName = 'Last name should only consist of alphabets and spaces!';
-          else if (/^[a-zA-Z\s]+$/.test(value))
-            errors.lastName = '';
-        }
+      else if (name === 'lastName'){
+        if (value.length === 0)
+          errors.lastName = 'Last name should not be empty!';
+        else if (!/^[a-zA-Z\s]+$/.test(value))
+          errors.lastName = 'Last name should only consist of alphabets and spaces!';
+        else if (/^[a-zA-Z\s]+$/.test(value))
+          errors.lastName = '';
+      }
       else if (name === 'email')
         errors.email = (emailRegex.test(value))? '': 'Invalid email ID';
-      else if (name === 'password'){
-        errors.password = value.length === 0? 'Password should not be empty':'';
-      }
+      else if (name === 'password')
+        errors.password = value.length < 6? 'Password should be atleast 6 characters long':'';
   }
 
   const handleSubmit = () => {
     if (firstName && lastName && email && password &&
         errors.firstName === '' && errors.lastName === '' && errors.email === '' && errors.password === '' ){
-            console.log('Signed up Succesfully!');
-            window.location.href = '/elections'
+            let data = {firstName, lastName, email, password}; 
+            axios.post('http://localhost:5000/', data)
+            .then(response => {
+              console.log('Signed up Succesfully!');
+              window.location.href = '/elections'
+            })
+            .catch(error => {
+              console.log(error);
+            })
         }
     }
 

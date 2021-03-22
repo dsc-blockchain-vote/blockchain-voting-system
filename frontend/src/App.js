@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import LeftDrawer from "./components/common/LeftDrawer";
 import { makeStyles } from "@material-ui/core/styles";
@@ -30,7 +30,7 @@ function App() {
             <main className={classes.content}>
                 <div className={classes.toolbar} />
                 {/* Page content goes here */}
-                <RouteHandler/>
+                <RouteHandler />
             </main>
         </div>
     );

@@ -6,7 +6,8 @@ import Candidates from "./Candidates";
 import VotersList from "./VotersList";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
-import firebaseDb from "../../../firebase";
+import axios from 'axios';
+
 
 const emailRegex = RegExp(
     /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
@@ -29,16 +30,8 @@ class CreateElectionForm extends Component{
             title: "",
             start: new Date(),
             end: new Date(),
-            candidates: [
-                { id: 1, name: "Name 1" },
-                { id: 2, name: "Name 2" },
-                { id: 3, name: "Name 3" },
-            ],
-            voters: [
-                { id: 1, name: "Name 1", voterID: 123, email: 'abc@gmail.com' },
-                { id: 2, name: "Name 2", voterID: 456, email: 'xyz@gmail.com' },
-                { id: 3, name: "Name 3", voterID: 789, email: 'test@gmail.com' },
-            ],
+            candidates: [],
+            voters: [],
             errors: {
                 title: '',
                 candidateName: [],
@@ -168,20 +161,14 @@ class CreateElectionForm extends Component{
         this.checkForErrors('email') === false && this.state.title && this.state.start &&
         this.state.end && this.checkForErrors('candidatesEmpty') === false && 
         this.checkForErrors('votersEmpty') === false){
-                const election = {
-                    title: this.state.title,
-                    startDate: this.state.start.toString(),
-                    endDate: this.state.end.toString(),
-                    candidates: this.state.candidates,
-                    voters: this.state.voters
-                }
-                firebaseDb.child('election').push(
-                    election,
-                    err => {
-                        if (err)
-                            console.log(err)
-                    })
-            }
+            axios.post('http://localhost:5000/', this.state)
+            .then(response => {
+              console.log('Created an election Succesfully!');
+            })
+            .catch(error => {
+              console.log(error);
+            })
+        }
         else
             alert("Check the input fields again for any invalid or empty entry")
     }

@@ -7,7 +7,6 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import PropTypes from 'prop-types';
 import UserInfo from "./UserInfo";
-
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import AllInboxIcon from '@material-ui/icons/AllInbox';
 import BallotIcon from '@material-ui/icons/Ballot';
