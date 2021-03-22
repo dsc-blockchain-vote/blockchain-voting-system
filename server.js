@@ -489,6 +489,114 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Listening on port ${port}...`);
+// updates election data
+app.put("/api/election/:electionID/update", verifyUser, async (req, res) => {
+  if (!req.body.isOrganizer) {
+    res.status(401).send("Unauthorized");
+    return;
+  }
+  const { 
+    electionID,
+    electionName,
+    candidates,
+    startTime,
+    endTime,
+    validVoters,
+  } = req.body;
+  try {
+    updates = ({
+      candidates: candidates,
+      startTime: humanToEpoch(startTime),
+      endTime: humanToEpoch(endTime),
+      validVoters: validVoters,
+      electionName: electionName,
+    });
+
+    db.ref("elections/" + electionID).update(updates);
+    res.send({ electionID: electionID });
+
+  } catch (error) {
+    res.status(400).send("bad request");
+  }
+});
+
+
+// returns an array with the winner's name(s). Array contains multiple names in case of a tie 
+app.get("/api/election/:electionID/winner", verifyUser, async (req, res) => {
+  const { candidateID, userID, isOrganizer } = req.body;
+  try {
+    let Account = await userAccount(userID);
+    let electionDetails = await getElectionData(
+      req.params.electionID,
+      isOrganizer
+    );
+    if (Account === null || electionDetails === null) {
+      res.status(400).send("bad request");
+      return;
+    }
+    const provider = new HDWalletProvider({
+      mnemonic: mnemonic,
+      providerOrUrl: URL,
+      addressIndex: Account,
+      numberOfAddresses: 1,
+    });
+    const web3 = new Web3(provider);
+    const contract = await new web3.eth.Contract(abi, electionDetails.address);
+    const result = await contract.methods
+      .getWinnerName()
+      .send({ from: provider.getAddress(0) });
+
+    res.send(result);
+    provider.engine.stop();
+  } catch (error) {
+    let response = "bad request";
+    const msg = error.message;
+    if (msg.includes("Election end time has not passed")) {
+      response = "Election has not ended";
+    } 
+    res.status(400).send(response);
+  }
+});
+
+
+//------------------------------------------------------------
+
+
+app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
+  const { userID } = req.body;
+  try {
+    let Account = await userAccount(userID);
+    let electionDetails = await getElectionData(
+      req.params.electionID,
+      false
+    );
+    if (Account === null || electionDetails === null) {
+      res.status(400).send("bad request");
+      return;
+    }
+    const provider = new HDWalletProvider({
+      mnemonic: mnemonic,
+      providerOrUrl: URL,
+      addressIndex: Account,
+      numberOfAddresses: 1,
+    });
+    const web3 = new Web3(provider);
+    const contract = await new web3.eth.Contract(abi, electionDetails.address);
+    const result = 0;
+    // TODO: retrieve election Data
+
+    res.send(result);
+    provider.engine.stop();
+  } catch (error) {
+    let response = "bad request";
+    const msg = error.message;
+    if (msg.includes("Election end time has not passed")) {
+      response = "Election has not ended";
+    } 
+    res.status(400).send(response);
+  }
+});
+
+app.get("/api/:user/info", verifyUser, async (req, res) => {
+  //TODO
 });
