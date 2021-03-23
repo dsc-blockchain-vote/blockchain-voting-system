@@ -6,7 +6,6 @@ import Tab from "@material-ui/core/Tab";
 import TimerIcon from "@material-ui/icons/Timer";
 import EventIcon from "@material-ui/icons/Event";
 import DoneIcon from "@material-ui/icons/Done";
-import Box from "@material-ui/core/Box";
 import Typography from "@material-ui/core/Typography";
 import Divider from "@material-ui/core/Divider";
 import Container from "@material-ui/core/Container";

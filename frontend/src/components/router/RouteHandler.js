@@ -8,6 +8,7 @@ import ResultsView from "../views/ResultsView/ResultsView";
 export default function RouteHandler() {
     return (
         <Switch>
+            <Route exact path="/" component={ElectionListView}/>
             <Route path="/create" component={CreateElectionView}/>
             <Route path="/ballot" component={BallotView}/>
             <Route exact path="/elections" component = {ElectionListView}/>
