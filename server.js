@@ -108,6 +108,7 @@ const validateVoters = async (
   const web3 = new Web3(provider);
   const deployedContract = await new web3.eth.Contract(abi, contractAddress);
   let invalidVoterIDs = [];
+  let validVoterAddresses = [];
   for (let id in validVoters) {
     let voterAccount = await userAccount(validVoters[id]);
     if (voterAccount === null) {
@@ -120,11 +121,13 @@ const validateVoters = async (
       addressIndex: voterAccount,
       numberOfAddresses: 1,
     });
-    await deployedContract.methods
-      .giveRightToVote(voterProvider.getAddress(0))
-      .send({ from: provider.getAddress(0) });
+    validVoterAddresses.push(voterProvider.getAddress(0));
     voterProvider.engine.stop();
   }
+  await deployedContract.methods
+    .giveRightToVote(validVoterAddresses)
+    .send({ from: provider.getAddress(0) });
+
   provider.engine.stop();
   return invalidVoterIDs;
 };
@@ -449,7 +452,11 @@ app.post("/api/login", async (req, res) => {
         res.end("Success");
       },
       (error) => {
-        res.status(401).send("Unauthorized");
+        res.status(401);
+        if (error.hasOwnProperty("message")) {
+          res.send(error.message);
+        }
+        res.send("Unauthorized");
       }
     );
 });
@@ -485,7 +492,12 @@ app.post("/api/register", async (req, res) => {
 
     res.send("User successfully registered");
   } catch (error) {
-    res.status(400).send("bad request");
+    res.status(400);
+    if (error.hasOwnProperty("message")) {
+      res.send(error.message);
+    } else {
+      res.send("bad request");
+    }
   }
 });
 
