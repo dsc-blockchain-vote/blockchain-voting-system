@@ -21,27 +21,21 @@ export default function BallotView(props) {
     var [vote, setVote] = useState(null);
 
      useEffect(() => {
-        axios.get(`http://localhost:5000/${id}`)    
+        axios.get(`http://localhost:5000/api/election/${id}`)    
         .then(response => {
-            setCandidates(response.data.candidates);
+            console.log(response);
+            /* setCandidates(response.data.candidates);
+            setVote(response.data.voted === true ? response.data.votedFor : ""); */
         })
         .catch(error => {
             console.log(error);
           })
-        checkVoted();
     }, []);
-
-    const checkVoted = () => {
-        axios.get(`http://localhost:5000//voter/election/${id}/`)
-        .then(response => {
-            setVote(response.data.result);
-        })    
-    }
 
     const submitForm = (event, value) => {
         event.preventDefault();
         console.log({id, value})
-        axios.post(`http://localhost:5000/voter/elections/${id}/vote`, value)
+        axios.put(`http://localhost:5000/api/election/${id}/vote`, value)
             .then(response => {
                 event.preventDefault();
                 console.log(value);
@@ -67,7 +61,7 @@ export default function BallotView(props) {
 
                                 candidates={candidates}
                                 other={otherEnabled}
-                                vote= {vote != false? vote:""}
+                                vote= {vote}
                             />
                         </Grid>
                     </Grid>
