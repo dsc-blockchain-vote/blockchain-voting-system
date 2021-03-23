@@ -96,7 +96,7 @@ class BallotList extends Component {
                             return (
                                 <FormControlLabel
                                     key={c.id}
-                                    value={c.id}
+                                    value={c.id.toString()}
                                     control={<Radio />}
                                     label={c.name}
                                 />

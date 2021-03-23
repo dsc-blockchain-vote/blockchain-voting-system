@@ -5,6 +5,7 @@ import CreateElectionView from '../views/CreateElectionView/CreateElectionView';
 import Login from '../views/LoginAndSignupView/Login';
 import Signup from '../views/LoginAndSignupView/Signup';
 import ElectionListView from '../views/ElectionListView/ElectionListView';
+import ResultsView from "../views/ResultsView/ResultsView";
 
 export default function RouteHandler() {
     return (
@@ -12,10 +13,12 @@ export default function RouteHandler() {
             <Route exact path="/" component={Login}/>
             <Route path="/create" component={CreateElectionView}/>
             <Route path="/ballot" component={BallotView}/>
-            <Route exact path="/elections" component={ElectionListView}/>
             <Route exact path="/elections/:id" component={BallotView}/>
             <Route path="/login" component={Login}/>
             <Route path="/signup" component={Signup}/>
+            <Route exact path="/elections" component = {ElectionListView}/>
+            <Route exact path="/elections/:id" component = {CreateElectionView}/>
+            <Route exact path="/elections/:id/results" component = {ResultsView}/>
         </Switch>
     )
 }

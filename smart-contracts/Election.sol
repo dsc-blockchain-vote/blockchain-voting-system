@@ -92,8 +92,10 @@ contract Election {
     @dev allows the organizer to give voting privilege to a voter
     @param voterAddress address of the voter account
      */
-    function giveRightToVote(address voterAddress) public onlyHost {
-        voters[voterAddress].validVoter = true;
+    function giveRightToVote(address[] memory voterAddress) public onlyHost {
+        for(uint256 i = 0; i < voterAddress.length; i++){
+            voters[voterAddress[i]].validVoter = true;
+        }
     }
 
 
