@@ -7,7 +7,7 @@ import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 import '../../../App.css';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import firebase from 'firebase';
 import { makeStyles } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
@@ -62,15 +62,36 @@ export default function Component() {
 
   const handleSubmit = () => {
         if (email && password && errors.email === '' && errors.password === ''){
-            let data = {email, password}; 
-            axios.post('http://localhost:5000/', data)
-            .then(response => {
-              console.log('Logged in Succesfully!');
-              window.location.href = '/elections'
-            })
-            .catch(error => {
-              console.log(error);
-            })
+            firebase.initializeApp({
+              apiKey: "AIzaSyCREMjwegn9Bg5WseW5KPGbeYakZOumUkc",
+              authDomain: "blockchain-try1.firebaseapp.com"
+            });
+          
+            // As httpOnly cookies are to be used, do not persist any state client side.
+            firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
+            firebase
+                .auth()
+                .signInWithEmailAndPassword(email, password)
+                .then(({ user }) => {
+                  return user.getIdToken().then((idToken) => {
+                    return fetch("http://localhost:5000/api/login", {
+                      method: "POST",
+                      headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json"
+                      },
+                      body: JSON.stringify({ idToken }),
+                    });
+                  });
+                })
+                .then(() => {
+                  return firebase.auth().signOut();
+                })
+                .then(() => {
+                  console.log("Logged in successfully!");
+                  window.location.assign("/elections");
+                });
+              return false;
         }
     }
 

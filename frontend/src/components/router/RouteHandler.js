@@ -9,7 +9,7 @@ import ElectionListView from '../views/ElectionListView/ElectionListView';
 export default function RouteHandler() {
     return (
         <Switch>
-            <Route exact path="/" component={ElectionListView}/>
+            <Route exact path="/" component={Login}/>
             <Route path="/create" component={CreateElectionView}/>
             <Route path="/ballot" component={BallotView}/>
             <Route exact path="/elections" component={ElectionListView}/>

@@ -5,6 +5,8 @@ import Button from '@material-ui/core/Button';
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
 import '../../../App.css';
 import axios from 'axios';
 import { makeStyles } from "@material-ui/core";
@@ -15,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
   },
   paperStyle: {
     padding: 20,
-    height: '70vh',
+    height: '55vh',
     width: 700,
     margin: '20px auto'
   },
@@ -34,47 +36,39 @@ export default function Signup() {
 
   const classes = useStyles();
 
-  var [firstName, setFirstName] = useState('');
-  var [lastName, setLastName] = useState('');
+  var [name, setName] = useState('');
   var [email, setEmail] = useState('');
   var [password, setPassword] = useState('');
-  var [errors, setErrors] = useState({firstName: '', lastName: '', email: '', password: ''});
-  var [disabled, setDisabled] = useState(true)
+  var [errors, setErrors] = useState({name: '', email: '', password: ''});
+  var [disabled, setDisabled] = useState(true);
+  var [checked, setChecked] = useState(false);
 
   const handleInputChange = (e) => {
         validation(e.target.name, e.target.value)
-        if (e.target.name === 'firstName')
-          setFirstName(e.target.value);
-        else if (e.target.name === 'lastName')
-            setLastName(e.target.value);
+        if (e.target.name === 'name')
+          setName(e.target.value);
         else if (e.target.name === 'email')
           setEmail(e.target.value);
         else if (e.target.name === 'password')
           setPassword(e.target.value);
-        if (firstName && lastName && email && password &&
-             errors.firstName === '' && errors.lastName === '' && errors.email === '' && errors.password === '' )
+        else if (e.target.name === 'checked')
+          setChecked(e.target.checked);
+        if (name && email && password &&
+             errors.name === '' && errors.email === '' && errors.password === '' )
           setDisabled(false)
         else 
           setDisabled(true)
     }
 
   const validation = (name, value) => {
-      if (name === 'firstName'){
+      if (name === 'name'){
           if (value.length === 0)
-            errors.firstName = 'First name should not be empty!';
+            errors.name = 'Name should not be empty!';
           else if (!/^[a-zA-Z\s]+$/.test(value))
-            errors.firstName = 'First name should only consist of alphabets and spaces!';
+            errors.name = 'Name should only consist of alphabets and spaces!';
           else if (/^[a-zA-Z\s]+$/.test(value))
-            errors.firstName = '';
+            errors.name = '';
         }
-      else if (name === 'lastName'){
-        if (value.length === 0)
-          errors.lastName = 'Last name should not be empty!';
-        else if (!/^[a-zA-Z\s]+$/.test(value))
-          errors.lastName = 'Last name should only consist of alphabets and spaces!';
-        else if (/^[a-zA-Z\s]+$/.test(value))
-          errors.lastName = '';
-      }
       else if (name === 'email')
         errors.email = (emailRegex.test(value))? '': 'Invalid email ID';
       else if (name === 'password')
@@ -82,10 +76,11 @@ export default function Signup() {
   }
 
   const handleSubmit = () => {
-    if (firstName && lastName && email && password &&
-        errors.firstName === '' && errors.lastName === '' && errors.email === '' && errors.password === '' ){
-            let data = {firstName, lastName, email, password}; 
-            axios.post('http://localhost:5000/', data)
+    if (name && email && password && errors.name === '' && 
+    errors.email === '' && errors.password === '' ){
+            let check = !checked;
+            let data = {name, email, password, check}; 
+            axios.post('http://localhost:5000/api/register', data)
             .then(response => {
               console.log('Signed up Succesfully!');
               window.location.href = '/elections'
@@ -105,28 +100,14 @@ export default function Signup() {
                     </Grid>
                     <Grid item xs={12}>
                         <TextField className={classes.textField}
-                            helperText={errors.firstName?errors.firstName:''}
+                            helperText={errors.name?errors.name:''}
                             FormHelperTextProps={{
                               className: classes.helperText
                             }}
-                            label="First Name"
+                            label="Name"
                             variant="outlined"
-                            name='firstName'
-                            value={firstName}
-                            fullWidth
-                            onChange={handleInputChange}
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField className={classes.textField}
-                            helperText={errors.lastName?errors.lastName:''}
-                            FormHelperTextProps={{
-                              className: classes.helperText
-                            }}
-                            label="Last Name"
-                            variant="outlined"
-                            name='lastName'
-                            value={lastName}
+                            name='name'
+                            value={name}
                             fullWidth
                             onChange={handleInputChange}
                         />
@@ -161,6 +142,12 @@ export default function Signup() {
                             onChange={handleInputChange}
 
                         />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <FormControlLabel
+                        control={<Checkbox checked={checked} onChange={handleInputChange} name="checked" />}
+                        label="I am an Organizer"
+                      />
                     </Grid>
                     <Grid className= 'button'>
                       <Button  
