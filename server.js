@@ -22,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // cors
 const cors = require("cors");
 if (env !== "production") {
-  app.use(cors());
+  app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 }
 
 //middleware
