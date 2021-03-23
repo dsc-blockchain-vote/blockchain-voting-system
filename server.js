@@ -523,7 +523,7 @@ app.put("/api/election/:electionID/update", verifyUser, async (req, res) => {
 
 // returns an array with the winner's name(s). Array contains multiple names in case of a tie 
 app.get("/api/election/:electionID/winner", verifyUser, async (req, res) => {
-  const { candidateID, userID, isOrganizer } = req.body;
+  const { userID, isOrganizer } = req.body;
   try {
     let Account = await userAccount(userID);
     let electionDetails = await getElectionData(
@@ -543,10 +543,10 @@ app.get("/api/election/:electionID/winner", verifyUser, async (req, res) => {
     const web3 = new Web3(provider);
     const contract = await new web3.eth.Contract(abi, electionDetails.address);
     const result = await contract.methods
-      .getWinnerName()
-      .send({ from: provider.getAddress(0) });
+      .winnerCandidateName2()
+      .call();
 
-    res.send(result);
+    res.send(result.split(","));
     provider.engine.stop();
   } catch (error) {
     let response = "bad request";
@@ -557,9 +557,6 @@ app.get("/api/election/:electionID/winner", verifyUser, async (req, res) => {
     res.status(400).send(response);
   }
 });
-
-
-//------------------------------------------------------------
 
 
 app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
@@ -582,9 +579,10 @@ app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
     });
     const web3 = new Web3(provider);
     const contract = await new web3.eth.Contract(abi, electionDetails.address);
-    const result = 0;
-    // TODO: retrieve election Data
 
+    const result = await contract.methods
+    .candidates()
+    .call();
     res.send(result);
     provider.engine.stop();
   } catch (error) {
@@ -597,6 +595,13 @@ app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
   }
 });
 
-app.get("/api/:user/info", verifyUser, async (req, res) => {
+//------------------------------------------------------------
+
+app.get("/api/user/info", verifyUser, async (req, res) => {
   //TODO
+});
+
+
+app.listen(port, () => {
+  console.log(`Listening on port ${port}...`);
 });

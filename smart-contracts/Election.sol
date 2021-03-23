@@ -1,4 +1,4 @@
-pragma solidity >=0.7.0 <0.8.0;
+    pragma solidity >=0.7.0 <0.8.0;
 pragma experimental ABIEncoderV2;
 import "./VotingSystem.sol";
 import "./FirstPastThePost.sol";
@@ -33,13 +33,18 @@ contract Election {
     @dev checks whether the sender made the request within the given endtime
      */
     modifier onlyWhileOpen() {
-        require(block.timestamp < endTime);
-        require(block.timestamp >= startTime);
+        require(block.timestamp < endTime, "Election has ended");
+        require(block.timestamp >= startTime, "Election has started");
         _;
     }
     
     modifier onlyBeforeElection() {
-        require(block.timestamp < startTime);
+        require(block.timestamp < startTime, "Election start time has passed");
+        _;
+    }
+    
+    modifier onlyAfterElection() {
+        require(block.timestamp > endTime, "Election end time has not passed");
         _;
     }
 
@@ -92,8 +97,10 @@ contract Election {
     @dev allows the organizer to give voting privilege to a voter
     @param voterAddress address of the voter account
      */
-    function giveRightToVote(address voterAddress) public onlyHost {
-        voters[voterAddress].validVoter = true;
+    function giveRightToVote(address[] memory voterAddress) public onlyHost {
+        for(uint256 i = 0; i < voterAddress.length; i++){
+            voters[voterAddress[i]].validVoter = true;
+        }
     }
 
 
@@ -107,40 +114,48 @@ contract Election {
         voters[msg.sender].voted = true;
         voters[msg.sender].votedFor = candidateID;
         candidates[candidateID].voteCount += 1;
-    }
+    }   
 
     /**
     @dev calculate the winning candidate according to the choosen voting system
     @return winningCandidate unit id of the winner candidate
      */
-    function calculateWinner() public returns (uint256[10] memory winningCandidate) {
+    function calculateWinner() public onlyAfterElection returns (uint256[10] memory winningCandidate) {
         FirstPastThePost countMethod = new FirstPastThePost(candidates);
         winningCandidate = countMethod.calculate();
     }
 
     /**
-    @dev returns the winning candidate(s) name
-    @return winnerName string name of the winning candidate
+    @dev returns the winning candidate(s) name(s)
+    @return winnerName array of the name(s) of the winning candidate(s)
      */
-    function winnerCandidateName() public returns (string memory winnerName) {
+    function winnerCandidateName() public onlyAfterElection returns (string[] memory winnerName) {
         FirstPastThePost countMethod = new FirstPastThePost(candidates);
         uint256[10] memory winners = countMethod.calculate();
-        if (winners.length > 1) {
-            winnerName = string(abi.encodePacked("tie: ", candidates[winners[0]].name));
-            for (uint256 i = 1; i < winners.length; i++) {
-                // abi.encodePacked(arg) is an ABI encoding function that concatinates 2 strings together;
-                if(winners[i] == 0 && i != 0){
-                    break;
-                }
-                winnerName = string(
-                    abi.encodePacked(winnerName,", ", candidates[winners[i]].name)
-                );
+        for (uint256 i = 0; i < winners.length; i++) {
+            // abi.encodePacked(arg) is an ABI encoding function that concatinates 2 strings together;
+            if(winners[i] == 0 && i != 0){
+                break;
             }
-            
-        } else {
-            winnerName = candidates[winners[0]].name;
+            winnerName[i] = candidates[i].name;
         }
     }
+    
+    function winnerCandidateName2() public returns (string memory winnerName) {
+        FirstPastThePost countMethod = new FirstPastThePost(candidates);
+        uint256[10] memory winners = countMethod.calculate();
+        winnerName = string(candidates[winners[0]].name);
+        for (uint256 i = 1; i < winners.length; i++) {
+            // abi.encodePacked(arg) is an ABI encoding function that concatinates 2 strings together;
+            if(winners[i] == 0 && i != 0){
+                break;
+            }
+            winnerName = string(
+                abi.encodePacked(winnerName,",", candidates[winners[i]].name)
+            );
+        }
+    }
+    
     /**
      @dev adds the candidate with the given name to the election. 
      This function is only callable before the election begins
