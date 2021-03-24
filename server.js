@@ -507,7 +507,7 @@ app.put("/api/election/:electionID/update", verifyUser, async (req, res) => {
     res.status(401).send("Unauthorized");
     return;
   }
-  const { 
+  const {
     electionName,
     candidates,
     startTime,
@@ -556,14 +556,14 @@ app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
 
     let electionResults = {};
     const numOfCandidates = await contract.methods
-    .numberOfCandidates()
-    .call();
+      .numberOfCandidates()
+      .call();
     let tempResults = [];
     let numVotes = 0;
-    for(let i = 0; i < numOfCandidates; i++){
+    for (let i = 0; i < numOfCandidates; i++) {
       let candidate = await contract.methods.candidates(i).call();
-      tempResults.push({name: candidate.name, votes: candidate.voteCount});
-      numVotes+= parseInt(candidate.voteCount);
+      tempResults.push({ name: candidate.name, votes: candidate.voteCount });
+      numVotes += parseInt(candidate.voteCount);
     }
     const winner = await contract.methods
       .getWinner()
@@ -579,21 +579,21 @@ app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
     const msg = error.message;
     if (msg.includes("Election end time has not passed")) {
       response = "Election has not ended";
-    } 
+    }
     res.status(400).send(response);
   }
 });
 
 app.get("/api/user/info", verifyUser, async (req, res) => {
-  const { userID , isOrganizer} = req.body;
+  const { userID, isOrganizer } = req.body;
   var starCountRef = db.ref('users/' + userID);
   starCountRef.on('value', (snapshot) => {
     const data = snapshot.val();
-    if(isOrganizer){
-      res.send({name: data.name, email: data.email, userID: userID, accountType: "Organizer"});
+    if (isOrganizer) {
+      res.send({ name: data.name, email: data.email, userID: userID, accountType: "Organizer" });
     }
-    else{
-      res.send({name: data.name, email: data.email, userID: userID, accountType: "Voter"});
+    else {
+      res.send({ name: data.name, email: data.email, userID: userID, accountType: "Voter" });
     }
   });
 });
@@ -601,4 +601,4 @@ app.get("/api/user/info", verifyUser, async (req, res) => {
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}...`);
-});
+});  
