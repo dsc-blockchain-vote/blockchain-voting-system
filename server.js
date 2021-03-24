@@ -245,31 +245,30 @@ app.get("/api/election/:electionID", verifyUser, async (req, res) => {
 // if user is voter, return all elections for which the user is eligible. Data for each election
 // returned here contains everything except list of voters
 app.get("/api/election/", verifyUser, async (req, res) => {
-  const { userID, isOrganizer } = req.body;
+  const { userID, isOrganizer, time } = req.body;
   try {
     const electionRef = db.ref("elections");
     const snapshot = await electionRef.once("value");
+    let data = snapshot.val();
+    let currDate = new Date(new Date().toISOString()).getTime();
+    let validElectionData = {};
+    let electionData = { upcoming: {}, previous: {}, ongoing: {} };
 
     if (isOrganizer) {
-      let organizerElectionData = {};
-      snapshot.forEach((childSnapshot) => {
-        let temp = childSnapshot.val();
-        if (temp.organizerID === userID) {
-          temp.endTime = epochToHuman(temp.endTime);
-          temp.startTime = epochToHuman(temp.startTime);
-          organizerElectionData[childSnapshot.key] = temp;
+      for (let key in data) {
+        let child = data[key];
+        if (child.organizerID === userID) {
+          child.endTime = epochToHuman(child.endTime);
+          child.startTime = epochToHuman(child.startTime);
+          validElectionData[key] = child;
         }
-      });
-      res.send(organizerElectionData);
+      }
     } else {
-      let currDate = new Date(new Date().toISOString()).getTime();
       let voterAccount = await userAccount(userID);
       if (voterAccount === null) {
         res.status(400).send("bad request");
         return;
       }
-      let voterElectionData = { Upcoming: {}, Previous: {}, Ongoing: {} };
-      let data = snapshot.val();
       for (let key in data) {
         if (data[key].hasOwnProperty("address")) {
           let temp = await getElectionData(key, isOrganizer);
@@ -277,19 +276,26 @@ app.get("/api/election/", verifyUser, async (req, res) => {
           let startTime = new Date(temp.startTime).getTime();
           let endTime = new Date(temp.endTime).getTime();
           if (result.validVoter) {
-            if (currDate < startTime) {
-              voterElectionData["Upcoming"][key] = temp;
-            } else if (currDate >= endTime) {
-              voterElectionData["Previous"][key] = temp;
-            } else {
-              voterElectionData["Ongoing"][key] = temp;
-            }
+            validElectionData[key] = temp;
           }
         }
       }
-      res.send(voterElectionData);
     }
+    for (let key in validElectionData) {
+      let electionInfo = validElectionData[key];
+      let startTime = new Date(electionInfo.startTime).getTime();
+      let endTime = new Date(electionInfo.endTime).getTime();
+      if (currDate < startTime) {
+        electionData["upcoming"][key] = electionInfo;
+      } else if (currDate >= endTime) {
+        electionData["previous"][key] = electionInfo;
+      } else {
+        electionData["ongoing"][key] = electionInfo;
+      }
+    }
+    res.send(electionData[time]);
   } catch (error) {
+    console.log(error);
     res.status(400).send("bad request");
   }
 });
