@@ -39,22 +39,19 @@ const useStyles = makeStyles({
 
 // Parse election data from a JSON response
 function parseElections(data) {
-    const elections = Object.keys(data);
-    const time = new Date();
-
     let result = {
         Upcoming: [],
         Previous: [],
         Ongoing: [],
     };
 
-    for (let i = 0; i < elections.length; i++) {
-        const election = data[elections[i]];
+    for (let id in data) {
+        const election = data[id];
         const startTime = parseJSON(election.startTime);
         const endTime = parseJSON(election.endTime);
         election.startTime = startTime;
         election.endTime = endTime;
-        election.electionID = elections[i];
+        election.electionID = id;
         // election ended
         if (isPast(endTime)) {
             result["Previous"].push(election);
@@ -187,6 +184,7 @@ function ElectionList(props) {
                                     <Typography variant="h6">
                                         {c.electionName}
                                     </Typography>
+                                    {/* show full date range when hovering on duration */}
                                     <Tooltip title={range} arrow>
                                         <Typography
                                             variant="subtitle2"
