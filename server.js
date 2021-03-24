@@ -38,10 +38,7 @@ app.use(cookieParser());
 // cors
 const cors = require("cors");
 if (env !== "production") {
-<<<<<<< HEAD
   app.use(cors());
-=======
->>>>>>> 3a0f7cbdda5d42f53f69a6085cc32c0963730131
   app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 }
 
