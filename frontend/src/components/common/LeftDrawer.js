@@ -14,7 +14,6 @@ import CreateIcon from '@material-ui/icons/Create';
 import SettingsIcon from '@material-ui/icons/Settings';
 import axios from 'axios';
 import Button from "@material-ui/core/Button";
-import { Route, MemoryRouter } from 'react-router';
 import { Link as RouterLink } from 'react-router-dom';
 
 const drawerWidth = 240;
@@ -47,7 +46,7 @@ export default function LeftDrawer() {
     const classes = useStyles();
 
     const logout = () => {
-        axios.get('http://localhost:5000/api/logout')
+        axios.get('http://localhost:5000/api/logout', {withCredentials: true})
         .then(response => {
           console.log('Logged out Succesfully!');
           window.location.assign("/login");
@@ -77,7 +76,7 @@ export default function LeftDrawer() {
                 <ListItemLink to="/ballot" primary="Ballot" icon={<BallotIcon />} />
                 <ListItemLink to="/login" primary="Login" />
                 <ListItemLink to="/signup" primary="Sign Up" />
-                <Button onClick={logout}>Logout</Button>
+                <Button onClick={ logout } >Logout</Button>
             </List>
             <Divider />
             <List>

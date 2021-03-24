@@ -38,7 +38,6 @@ app.use(cookieParser());
 // cors
 const cors = require("cors");
 if (env !== "production") {
-  app.use(cors());
   app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 }
 
@@ -465,6 +464,7 @@ app.post("/api/login", async (req, res) => {
 // logout endpoint
 app.get("/api/logout", (req, res) => {
   res.clearCookie("session");
+  res.send("Logged out");
 });
 
 // register endpoint
