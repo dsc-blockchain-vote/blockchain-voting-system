@@ -146,11 +146,12 @@ validate the list of voter IDs
 
 ## `GET /api/election/`
 
-gets all the elections that this organizer has
+gets all the elections that this organizer which are either ongoing, upcominh or previous
 
 ### Request JSON
 
-- EMPTY
+- {`time`: "ongoing" OR "previous" OR "upcoming"}
+- choose only one of the above options for `time`
 
 ### Response
 
@@ -255,7 +256,8 @@ Gets the elections for which the voter is valid for. These elections are divided
 
 ### Request JSON
 
-- EMPTY
+- {`time`: "ongoing" OR "previous" OR "upcoming"}
+- choose only one of the above options for `time`
 
 ### Response
 
@@ -263,21 +265,17 @@ Gets the elections for which the voter is valid for. These elections are divided
 
   - `JSON returned`:  
     {  
-    &emsp;`Upcoming`: {..."ELECTION ID"...},  
-    &emsp;`Previous`: {..."ELECTION ID"...},  
-    &emsp;`Ongoing`: {  
-     &emsp;&emsp;"ELECTION ID": {  
-     &emsp;&emsp;&emsp;`candidates`: array of candidates,  
-     &emsp;&emsp;&emsp;`endTime`: end time of election in UTC in ISO format,  
-     &emsp;&emsp;&emsp;`startTime`: start time of election in UTC is ISO format,  
-     &emsp;&emsp;&emsp;`electionName`: name of election,  
-     &emsp;&emsp;&emsp;`organizerName`: name of organizer,  
-    &emsp;&emsp;&emsp; `address`: address of deployed contract  
-     &emsp;&emsp;&emsp;}  
-    &emsp;}  
-    }
+     &emsp;"ELECTION ID": {  
+     &emsp;&emsp;`candidates`: array of candidates,  
+     &emsp;&emsp;`endTime`: end time of election in UTC in ISO format,  
+     &emsp;&emsp;`startTime`: start time of election in UTC is ISO format,  
+     &emsp;&emsp;`electionName`: name of election,  
+     &emsp;&emsp;`organizerName`: name of organizer,  
+    &emsp;&emsp; `address`: address of deployed contract  
+     &emsp;&emsp;}  
+     }
+
     - "ELECTION ID" is the alphanumeric ID of the election and not the words literally
-    - Each `Upcoming`, `Previous`, and `Ongoing` field contain another JSON of election ids each of which contains the fields mentioned above
     - The `address` field exists only if the contract has been deployed
 
 - `Status code`: 401
