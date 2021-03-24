@@ -108,6 +108,7 @@ const validateVoters = async (
   const web3 = new Web3(provider);
   const deployedContract = await new web3.eth.Contract(abi, contractAddress);
   let invalidVoterIDs = [];
+  let validVoterAddresses = [];
   for (let id in validVoters) {
     let voterAccount = await userAccount(validVoters[id]);
     if (voterAccount === null) {
@@ -120,11 +121,13 @@ const validateVoters = async (
       addressIndex: voterAccount,
       numberOfAddresses: 1,
     });
-    await deployedContract.methods
-      .giveRightToVote(voterProvider.getAddress(0))
-      .send({ from: provider.getAddress(0) });
+    validVoterAddresses.push(voterProvider.getAddress(0));
     voterProvider.engine.stop();
   }
+  await deployedContract.methods
+    .giveRightToVote(validVoterAddresses)
+    .send({ from: provider.getAddress(0) });
+
   provider.engine.stop();
   return invalidVoterIDs;
 };
@@ -449,7 +452,11 @@ app.post("/api/login", async (req, res) => {
         res.end("Success");
       },
       (error) => {
-        res.status(401).send("Unauthorized");
+        res.status(401);
+        if (error.hasOwnProperty("message")) {
+          res.send(error.message);
+        }
+        res.send("Unauthorized");
       }
     );
 });
@@ -485,7 +492,12 @@ app.post("/api/register", async (req, res) => {
 
     res.send("User successfully registered");
   } catch (error) {
-    res.status(400).send("bad request");
+    res.status(400);
+    if (error.hasOwnProperty("message")) {
+      res.send(error.message);
+    } else {
+      res.send("bad request");
+    }
   }
 });
 
@@ -520,45 +532,8 @@ app.put("/api/election/:electionID/update", verifyUser, async (req, res) => {
   }
 });
 
-
-// returns an array with the winner's name(s). Array contains multiple names in case of a tie 
-app.get("/api/election/:electionID/winner", verifyUser, async (req, res) => {
-  const { userID, isOrganizer } = req.body;
-  try {
-    let Account = await userAccount(userID);
-    let electionDetails = await getElectionData(
-      req.params.electionID,
-      isOrganizer
-    );
-    if (Account === null || electionDetails === null) {
-      res.status(400).send("bad request");
-      return;
-    }
-    const provider = new HDWalletProvider({
-      mnemonic: mnemonic,
-      providerOrUrl: URL,
-      addressIndex: Account,
-      numberOfAddresses: 1,
-    });
-    const web3 = new Web3(provider);
-    const contract = await new web3.eth.Contract(abi, electionDetails.address);
-    const result = await contract.methods
-      .winnerCandidateName2()
-      .call();
-
-    res.send(result.split(","));
-    provider.engine.stop();
-  } catch (error) {
-    let response = "bad request";
-    const msg = error.message;
-    if (msg.includes("Election end time has not passed")) {
-      response = "Election has not ended";
-    } 
-    res.status(400).send(response);
-  }
-});
-
-
+// returns an object with the election winner, an array with each candidates name and their vote count, 
+// and total number of votes casted during the election
 app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
   const { userID } = req.body;
   try {
@@ -580,10 +555,25 @@ app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
     const web3 = new Web3(provider);
     const contract = await new web3.eth.Contract(abi, electionDetails.address);
 
-    const result = await contract.methods
-    .candidates()
+    let electionResults = {};
+    const numOfCandidates = await contract.methods
+    .numberOfCandidates()
     .call();
-    res.send(result);
+    let tempResults = [];
+    let numVotes = 0;
+    for(let i = 0; i < numOfCandidates; i++){
+      let candidate = await contract.methods.candidates(i).call();
+      tempResults.push({name: candidate.name, votes: candidate.voteCount});
+      numVotes+= parseInt(candidate.voteCount);
+    }
+    const winner = await contract.methods
+      .getWinner()
+      .call();
+    electionResults["totalVotes"] = numVotes;
+    electionResults["results"] = tempResults;
+    electionResults["winner"] = winner;
+
+    res.send(electionResults);
     provider.engine.stop();
   } catch (error) {
     let response = "bad request";
@@ -595,10 +585,19 @@ app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
   }
 });
 
-//------------------------------------------------------------
-
 app.get("/api/user/info", verifyUser, async (req, res) => {
-  //TODO
+  const { userID , isOrganizer} = req.body;
+  var starCountRef = db.ref('users/' + userID);
+  starCountRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    console.log(data);
+    if(isOrganizer){
+      res.send({name: data.name, email: data.email, userID: userID, accountType: "Organizer"});
+    }
+    else{
+      res.send({name: data.name, email: data.email, userID: userID, accountType: "Voter"});
+    }
+  });
 });
 
 
