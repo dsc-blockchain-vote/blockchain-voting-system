@@ -92,7 +92,9 @@ export default function ElectionListView(props) {
                         <ElectionList type={"upcoming"} />
                     </TabPanel>
                     <TabPanel value={value} index={2}>
-                        <Typography variant="h4">Concluded elections</Typography>
+                        <Typography variant="h4">
+                            Concluded elections
+                        </Typography>
                         <Divider className={classes.divider} />
                         <ElectionList type={"previous"} />
                     </TabPanel>
@@ -170,11 +172,11 @@ function ElectionList(props) {
                         c.startTime,
                         "d MMM yyyy HH:mm"
                     )} to ${format(c.endTime, "d MMM yyyy HH:mm")}`;
-                    if (props.type === "Upcoming") {
+                    if (props.type === "upcoming") {
                         duration = `Starts in ${distanceInWordsToNow(
                             c.startTime
                         )}`;
-                    } else if (props.type === "Previous") {
+                    } else if (props.type === "previous") {
                         duration = `Ended ${distanceInWordsToNow(
                             c.endTime
                         )} ago`;
@@ -200,14 +202,10 @@ function ElectionList(props) {
                                         </Tooltip>
                                     </Grid>
                                     <Grid item xs={2}>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            component={Link}
-                                            to={`elections/${id}`}
-                                        >
-                                            View Election
-                                        </Button>
+                                        <ElectionButton
+                                            id={id}
+                                            type={props.type}
+                                        />
                                     </Grid>
                                 </Grid>
                             </Paper>
@@ -229,4 +227,36 @@ function ElectionList(props) {
             </div>
         );
     }
+}
+
+// Represents a button that changes contents based on the election results
+function ElectionButton(props) {
+    let text = "View Election"
+    let link = "";
+    let disabled = false;
+
+    if (props.type === "ongoing") {
+        text = "Cast Ballot";
+        link = `elections/${props.id}/ballot`;
+    }
+    else if (props.type === "upcoming") {
+        text = "Preview Ballot";
+        link = `elections/${props.id}/preview`;
+    }
+    else if (props.type === "previous") {
+        text = "View Results";
+        link = `elections/${props.id}/results`;
+    }
+
+    return (
+        <Button
+            variant="contained"
+            color="primary"
+            component={Link}
+            to={link}
+            disabled={disabled}
+        >
+            {text}
+        </Button>
+    );
 }
