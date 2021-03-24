@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useEffect } from "react";
 import Paper from "@material-ui/core/Paper";
 import { makeStyles } from "@material-ui/core/styles";
 import Tabs from "@material-ui/core/Tabs";
@@ -9,10 +9,14 @@ import DoneIcon from "@material-ui/icons/Done";
 import Typography from "@material-ui/core/Typography";
 import Divider from "@material-ui/core/Divider";
 import Container from "@material-ui/core/Container";
-import DateFnsUtils from "@date-io/date-fns";
-import { format } from "date-fns";
-import { Link } from 'react-router-dom';
-import { Button, Grid } from "@material-ui/core";
+import format from "date-fns/format";
+import parseJSON from "date-fns/parseJSON";
+import distanceInWordsToNow from "date-fns/formatDistanceToNow";
+import isPast from "date-fns/isPast";
+import isFuture from "date-fns/isFuture";
+import { Link } from "react-router-dom";
+import { Button, Grid, Tooltip } from "@material-ui/core";
+import axios from "axios";
 
 const useStyles = makeStyles({
     root: {
@@ -33,70 +37,62 @@ const useStyles = makeStyles({
     },
 });
 
-function getElections(elections) {
-    // TODO: this will eventually grab data from backend, for now this is filler data
-    // eventually this should grab election data as the tabs are switched - not all 3 categories at once
-    return [
-        {
-            category: "current",
-            elections: [
-                {
-                    id: 1,
-                    title: "Election 1",
-                    start: new Date("December 17, 2020 03:24:00"),
-                    end: new Date("March 19, 2021 03:24:00"),
-                },
-                {
-                    id: 2,
-                    title: "Election 2",
-                    start: new Date("December 17, 2020 03:24:00"),
-                    end: new Date("March 30, 2021 03:24:00"),
-                },
-            ],
-        },
-        {
-            category: "upcoming",
-            elections: [
-                {
-                    id: 3,
-                    title: "Election 3",
-                    start: new Date("December 17, 2021 03:24:00"),
-                    end: new Date("March 19, 2022 03:24:00"),
-                },
-                {
-                    id: 4,
-                    title: "Election 4",
-                    start: new Date("December 17, 2021 03:24:00"),
-                    end: new Date("March 30, 2022 03:24:00"),
-                },
-            ],
-        },
-        {
-            category: "concluded",
-            elections: [
-                {
-                    id: 5,
-                    title: "Election 5",
-                    start: new Date("December 17, 2019 03:24:00"),
-                    end: new Date("March 19, 2020 03:24:00"),
-                },
-                {
-                    id: 6,
-                    title: "Election 6",
-                    start: new Date("December 17, 2019 03:24:00"),
-                    end: new Date("March 30, 2020 03:24:00"),
-                },
-            ],
-        },
-    ];
+// Parse election data from a JSON response
+function parseElections(data) {
+    const elections = Object.keys(data);
+    const time = new Date();
+
+    let result = {
+        Upcoming: [],
+        Previous: [],
+        Ongoing: [],
+    };
+
+    for (let i = 0; i < elections.length; i++) {
+        const election = data[elections[i]];
+        const startTime = parseJSON(election.startTime);
+        const endTime = parseJSON(election.endTime);
+        election.startTime = startTime;
+        election.endTime = endTime;
+        election.electionID = elections[i];
+        // election ended
+        if (isPast(endTime)) {
+            result["Previous"].push(election);
+        }
+        // election hasn't started
+        else if (isFuture(startTime)) {
+            result["Upcoming"].push(election);
+        }
+        // election is in progress
+        else {
+            result["Ongoing"].push(election);
+        }
+    }
+    return result;
 }
 
 export default function ElectionListView(props) {
     const classes = useStyles();
     const [value, setValue] = React.useState(0);
+    const [elections, setElections] = React.useState({
+        Upcoming: [],
+        Previous: [],
+        Ongoing: [],
+    });
 
-    // TODO: link with backend
-    const elections = getElections(props.elections);
+    // get elections for this user
+    useEffect(() => {
+        const result = axios
+            .get("http://localhost:5000/api/election", {
+                withCredentials: true,
+            })
+            .then((response) => {
+                setElections(parseElections(response.data));
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }, []);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -122,17 +118,17 @@ export default function ElectionListView(props) {
                 <TabPanel value={value} index={0}>
                     <Typography variant="h4">Current elections</Typography>
                     <Divider className={classes.divider} />
-                    <ElectionList elections={elections[0].elections} />
+                    <ElectionList elections={elections} type={"Ongoing"} />
                 </TabPanel>
                 <TabPanel value={value} index={1}>
                     <Typography variant="h4">Upcoming elections</Typography>
                     <Divider className={classes.divider} />
-                    <ElectionList elections={elections[1].elections} />
+                    <ElectionList elections={elections} type={"Upcoming"} />
                 </TabPanel>
                 <TabPanel value={value} index={2}>
                     <Typography variant="h4">Concluded elections</Typography>
                     <Divider className={classes.divider} />
-                    <ElectionList elections={elections[2].elections} />
+                    <ElectionList elections={elections} type={"Previous"} />
                 </TabPanel>
             </Container>
         </div>
@@ -159,29 +155,71 @@ function TabPanel(props) {
     );
 }
 
+// Represents a single 'tab' containing a list of elections
 function ElectionList(props) {
     const classes = useStyles();
+    const elections = props.elections[props.type];
+    if (elections && elections.length > 0) {
+        return (
+            <div>
+                {elections.map((c) => {
+                    // set up duration string
+                    let duration = "";
+                    let range = `${format(
+                        c.startTime,
+                        "d MMM yyyy HH:mm"
+                    )} to ${format(c.endTime, "d MMM yyyy HH:mm")}`;
+                    if (props.type === "Upcoming") {
+                        duration = `Starts in ${distanceInWordsToNow(
+                            c.startTime
+                        )}`;
+                    } else if (props.type === "Previous") {
+                        duration = `Ended ${distanceInWordsToNow(
+                            c.endTime
+                        )} ago`;
+                    } else {
+                        duration = `Ends in ${distanceInWordsToNow(c.endTime)}`;
+                    }
+                    return (
+                        <Paper className={classes.paper}>
+                            <Grid container alignItems="center" spacing={3}>
+                                <Grid item xs={10}>
+                                    <Typography variant="h6">
+                                        {c.electionName}
+                                    </Typography>
+                                    <Tooltip title={range} arrow>
+                                        <Typography
+                                            variant="subtitle2"
+                                            display="inline"
+                                        >
+                                            {duration}
+                                        </Typography>
+                                    </Tooltip>
+                                </Grid>
+                                <Grid item xs={2}>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        component={Link}
+                                        to={`elections/${c.electionID}`}
+                                    >
+                                        View Election
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </Paper>
+                    );
+                })}
+            </div>
+        );
+    }
     return (
         <div>
-            {props.elections.map((c) => {
-                return (
-                    <Paper className={classes.paper}>
-                        <Grid container alignItems='center' spacing={3}>
-                            <Grid item xs={10}>
-                                <Typography variant="h6">{c.title}</Typography>
-                                <Typography variant="subtitle2">
-                                    {format(c.start, "MM/dd/yyyy")} to{" "}
-                                    {format(c.end, "MM/dd/yyyy")}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={2}>
-                                <Button variant="contained" color="primary" component={Link} to={`elections/${c.id}`} >
-                                    View Election</Button>
-                            </Grid>
-                        </Grid>
-                    </Paper>
-                );
-            })}
+            <Typography variant="h5">No elections found </Typography>
+            <Typography>
+                If you believe this is an error, contact your organization's
+                administrator.
+            </Typography>
         </div>
     );
 }
