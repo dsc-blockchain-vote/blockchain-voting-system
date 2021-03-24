@@ -9,6 +9,7 @@ import '../../../App.css';
 import { Link } from 'react-router-dom';
 import firebase from 'firebase';
 import { makeStyles } from "@material-ui/core";
+import axios from "axios";
 
 const useStyles = makeStyles((theme) => ({
   helperText: {
@@ -73,25 +74,18 @@ export default function Component() {
                 .auth()
                 .signInWithEmailAndPassword(email, password)
                 .then(({ user }) => {
+                  user.getIdToken().then(console.log)
                   return user.getIdToken().then((idToken) => {
-                    return fetch("http://localhost:5000/api/login", {
-                      method: "POST",
-                      headers: {
-                        Accept: "application/json",
-                        "Content-Type": "application/json"
-                      },
-                      body: JSON.stringify({ idToken }),
-                    });
+                    return (axios.post('http://localhost:5000/api/login', {"idToken":idToken}, {withCredentials: true})
+                    .then(response => {
+                      console.log('Logged in Succesfully!');
+                      window.location.href = '/elections'
+                    })
+                    .catch(error => {
+                      console.log(error);
+                    }));
                   });
                 })
-                .then(() => {
-                  return firebase.auth().signOut();
-                })
-                .then(() => {
-                  console.log("Logged in successfully!");
-                  window.location.assign("/elections");
-                });
-              return false;
         }
     }
 

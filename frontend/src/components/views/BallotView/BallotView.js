@@ -14,18 +14,18 @@ import axios from "axios";
 
 export default function BallotView(props) {
 
-    const [id, setId] = useState(props.match.params.id);
-    const [title, setTitle] = useState(id?`Election ${id}`:"Election");
+    const [id, setId] = useState(props.location.state.election.electionID);
+    const [title, setTitle] = useState(id?props.location.state.election.electionName:"Election");
     const [otherEnabled, setOtherEnabled] = useState(true);
     const [candidates, setCandidates] = useState([]);
-    var [vote, setVote] = useState(null);
+    var [vote, setVote] = useState("");
 
      useEffect(() => {
         axios.get(`http://localhost:5000/api/election/${id}`)    
         .then(response => {
             console.log(response);
-            /* setCandidates(response.data.candidates);
-            setVote(response.data.voted === true ? response.data.votedFor : ""); */
+            setCandidates(response.data.candidates);
+            // setVote(response.data.voted === true ? response.data.votedFor.toString() : ""); 
         })
         .catch(error => {
             console.log(error);
@@ -39,6 +39,7 @@ export default function BallotView(props) {
             .then(response => {
                 event.preventDefault();
                 console.log(value);
+                console.log("Voted successfully!");
             })
             .catch(error => {
               console.log(error);

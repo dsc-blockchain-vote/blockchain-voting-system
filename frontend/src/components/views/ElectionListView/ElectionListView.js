@@ -201,7 +201,12 @@ function ElectionList(props) {
                                         variant="contained"
                                         color="primary"
                                         component={Link}
-                                        to={`elections/${c.electionID}`}
+                                        to={{
+                                            pathname: `elections/${c.electionID}`,
+                                            state: {
+                                              election: c
+                                            }
+                                          }}
                                     >
                                         View Election
                                     </Button>
