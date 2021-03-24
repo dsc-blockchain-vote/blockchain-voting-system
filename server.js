@@ -470,6 +470,7 @@ app.post("/api/login", async (req, res) => {
 // logout endpoint
 app.get("/api/logout", (req, res) => {
   res.clearCookie("session");
+  res.send("logged out");
 });
 
 // register endpoint
@@ -504,7 +505,6 @@ app.post("/api/register", async (req, res) => {
     } else {
       res.send("bad request");
     }
-
   }
 });
 
@@ -519,7 +519,7 @@ app.put("/api/election/:electionID/update", verifyUser, async (req, res) => {
     candidates,
     startTime,
     endTime,
-    validVoters
+    validVoters,
   } = req.body;
   try {
     const updates = {
@@ -527,27 +527,23 @@ app.put("/api/election/:electionID/update", verifyUser, async (req, res) => {
       startTime: humanToEpoch(startTime),
       endTime: humanToEpoch(endTime),
       validVoters: validVoters,
-      electionName: electionName
+      electionName: electionName,
     };
 
     await db.ref("elections/" + req.params.electionID).update(updates);
     res.send({ electionID: req.params.electionID });
-
   } catch (error) {
     res.status(400).send("bad request");
   }
 });
 
-// returns an object with the election winner, an array with each candidates name and their vote count, 
+// returns an object with the election winner, an array with each candidates name and their vote count,
 // and total number of votes casted during the election
 app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
   const { userID } = req.body;
   try {
     let Account = await userAccount(userID);
-    let electionDetails = await getElectionData(
-      req.params.electionID,
-      false
-    );
+    let electionDetails = await getElectionData(req.params.electionID, false);
     if (Account === null || electionDetails === null) {
       res.status(400).send("bad request");
       return;
@@ -562,9 +558,7 @@ app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
     const contract = await new web3.eth.Contract(abi, electionDetails.address);
 
     let electionResults = {};
-    const numOfCandidates = await contract.methods
-      .numberOfCandidates()
-      .call();
+    const numOfCandidates = await contract.methods.numberOfCandidates().call();
     let tempResults = [];
     let numVotes = 0;
     for (let i = 0; i < numOfCandidates; i++) {
@@ -572,9 +566,7 @@ app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
       tempResults.push({ name: candidate.name, votes: candidate.voteCount });
       numVotes += parseInt(candidate.voteCount);
     }
-    const winner = await contract.methods
-      .getWinner()
-      .call();
+    const winner = await contract.methods.getWinner().call();
     electionResults["totalVotes"] = numVotes;
     electionResults["results"] = tempResults;
     electionResults["winner"] = winner;
@@ -593,20 +585,27 @@ app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
 
 app.get("/api/user/info", verifyUser, async (req, res) => {
   const { userID, isOrganizer } = req.body;
-  var starCountRef = db.ref('users/' + userID);
-  starCountRef.on('value', (snapshot) => {
+  var starCountRef = db.ref("users/" + userID);
+  starCountRef.on("value", (snapshot) => {
     const data = snapshot.val();
     if (isOrganizer) {
-      res.send({ name: data.name, email: data.email, userID: userID, accountType: "Organizer" });
-    }
-    else {
-      res.send({ name: data.name, email: data.email, userID: userID, accountType: "Voter" });
+      res.send({
+        name: data.name,
+        email: data.email,
+        userID: userID,
+        accountType: "Organizer",
+      });
+    } else {
+      res.send({
+        name: data.name,
+        email: data.email,
+        userID: userID,
+        accountType: "Voter",
+      });
     }
   });
 });
 
-
 app.listen(port, () => {
   console.log(`Listening on port ${port}...`);
 });
-
