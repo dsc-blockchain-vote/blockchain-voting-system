@@ -1,4 +1,4 @@
-pragma solidity >=0.7.0 <0.8.0;
+    pragma solidity >=0.7.0 <0.8.0;
 pragma experimental ABIEncoderV2;
 import "./VotingSystem.sol";
 import "./FirstPastThePost.sol";
@@ -32,6 +32,7 @@ contract Election {
     /**
     @dev checks if the sender made the request while the election was occuring
      */
+
     modifier onlyDuringElection() {
         require(block.timestamp < endTime, "Election has ended");
         require(block.timestamp >= startTime, "Election has started");
@@ -100,13 +101,14 @@ contract Election {
         voters[msg.sender].voted = true;
         voters[msg.sender].votedFor = candidateID;
         candidates[candidateID].voteCount += 1;
-    }
+    }   
 
     /**
     @dev calculate the winning candidate(s) according to the chosen voting system
     @return winnerName a string containing the winning candidate(s) name(s). In case of a tie(s), 
     the names are seperated by a comma
      */
+
 
     function getWinner()
         public
@@ -126,6 +128,8 @@ contract Election {
             );
         }
     }
+
+
 
     /**
     @dev get the number of candidates in the election
