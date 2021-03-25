@@ -14,22 +14,24 @@ import axios from "axios";
 
 export default function BallotView(props) {
 
-    const [id, setId] = useState(props.location.state.election.electionID);
+    const [id, setId] = useState(props.location.state.id);
     const [title, setTitle] = useState(id?props.location.state.election.electionName:"Election");
     const [otherEnabled, setOtherEnabled] = useState(true);
     const [candidates, setCandidates] = useState([]);
     var [vote, setVote] = useState("");
 
      useEffect(() => {
+        console.log(props.location.state.election)
         axios.get(`http://localhost:5000/api/election/${id}`)    
         .then(response => {
             console.log(response);
             setCandidates(response.data.candidates);
-            // setVote(response.data.voted === true ? response.data.votedFor.toString() : ""); 
+            setVote(response.data.voted === true ? response.data.votedFor.toString() : ""); 
         })
         .catch(error => {
             console.log(error);
           })
+        console.log('after')
     }, []);
 
     const submitForm = (event, value) => {
