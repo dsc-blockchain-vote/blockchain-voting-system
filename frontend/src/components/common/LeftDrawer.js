@@ -47,7 +47,7 @@ export default function LeftDrawer() {
     const classes = useStyles();
 
     const logout = () => {
-        axios.get('http://localhost:5000/api/logout')
+        axios.get('http://localhost:5000/api/logout', {withCredentials: true})
         .then(response => {
           console.log('Logged out Succesfully!');
           window.location.assign("/login");
