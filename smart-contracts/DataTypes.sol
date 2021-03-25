@@ -4,19 +4,19 @@ pragma experimental ABIEncoderV2;
 /**
 @dev library to have common datatypes across all contracts
  */
-library DataTypes{
+library DataTypes {
     /// Voter datatype. Stores whether they have voted, whom they have voted for and
     /// whether they are allowed to vote in the election
     struct Voter {
-        bool voted;  
-        uint votedFor; 
+        bool voted;
+        uint256 votedFor;
         bool validVoter;
     }
 
     /// election candidate datatype. Stores the name, votes received and id
     struct Candidate {
         string name;
-        uint voteCount;
-        uint id;
-    }    
+        uint256 voteCount;
+        uint256 id;
+    }
 }

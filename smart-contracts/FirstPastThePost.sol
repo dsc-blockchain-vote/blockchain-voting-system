@@ -23,7 +23,7 @@ contract FirstPastThePost is VotingSystem {
     @return winningCandidate Returns an array of the winning candidate(s) 
     (In case of ties, an array with the frst 10 candidates that tied are returned)
      */
-function calculate()
+    function calculate()
         external
         view
         override
@@ -32,20 +32,17 @@ function calculate()
         uint256 winningVoteCount = 0;
         uint256 tempIndex = 0;
         for (uint256 i = 0; i < candidates.length; i++) {
-            if(tempIndex > 10){
+            if (tempIndex > 10) {
                 break;
             }
-            if(keccak256(abi.encodePacked((candidates[i].name))) != keccak256(abi.encodePacked(("Deleted")))){
-                if (candidates[i].voteCount > winningVoteCount) {
-                    winningVoteCount = candidates[i].voteCount;
-                    delete winningCandidate;
-                    tempIndex = 0;
-                    winningCandidate[tempIndex] = i;
-                }
-                else if (candidates[i].voteCount == winningVoteCount) {
-                    winningCandidate[tempIndex] = i;
-                    tempIndex++;
-                }
+            if (candidates[i].voteCount > winningVoteCount) {
+                winningVoteCount = candidates[i].voteCount;
+                delete winningCandidate;
+                tempIndex = 0;
+                winningCandidate[tempIndex] = i;
+            } else if (candidates[i].voteCount == winningVoteCount) {
+                winningCandidate[tempIndex] = i;
+                tempIndex++;
             }
         }
     }
