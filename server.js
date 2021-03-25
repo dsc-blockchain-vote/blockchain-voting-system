@@ -38,10 +38,7 @@ app.use(cookieParser());
 // cors
 const cors = require("cors");
 if (env !== "production") {
-<<<<<<< HEAD
   app.use(cors());
-=======
->>>>>>> 3a0f7cbdda5d42f53f69a6085cc32c0963730131
   app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 }
 
@@ -250,30 +247,30 @@ app.get("/api/election/:electionID", verifyUser, async (req, res) => {
 // returned here contains everything except list of voters
 app.get("/api/election/", verifyUser, async (req, res) => {
   const { userID, isOrganizer } = req.body;
+  const time = req.query.time;
   try {
     const electionRef = db.ref("elections");
     const snapshot = await electionRef.once("value");
+    let data = snapshot.val();
+    let currDate = new Date(new Date().toISOString()).getTime();
+    let validElectionData = {};
+    let electionData = { upcoming: {}, previous: {}, ongoing: {} };
 
     if (isOrganizer) {
-      let organizerElectionData = {};
-      snapshot.forEach((childSnapshot) => {
-        let temp = childSnapshot.val();
-        if (temp.organizerID === userID) {
-          temp.endTime = epochToHuman(temp.endTime);
-          temp.startTime = epochToHuman(temp.startTime);
-          organizerElectionData[childSnapshot.key] = temp;
+      for (let key in data) {
+        let child = data[key];
+        if (child.organizerID === userID) {
+          child.endTime = epochToHuman(child.endTime);
+          child.startTime = epochToHuman(child.startTime);
+          validElectionData[key] = child;
         }
-      });
-      res.send(organizerElectionData);
+      }
     } else {
-      let currDate = new Date(new Date().toISOString()).getTime();
       let voterAccount = await userAccount(userID);
       if (voterAccount === null) {
         res.status(400).send("bad request");
         return;
       }
-      let voterElectionData = { Upcoming: {}, Previous: {}, Ongoing: {} };
-      let data = snapshot.val();
       for (let key in data) {
         if (data[key].hasOwnProperty("address")) {
           let temp = await getElectionData(key, isOrganizer);
@@ -281,19 +278,26 @@ app.get("/api/election/", verifyUser, async (req, res) => {
           let startTime = new Date(temp.startTime).getTime();
           let endTime = new Date(temp.endTime).getTime();
           if (result.validVoter) {
-            if (currDate < startTime) {
-              voterElectionData["Upcoming"][key] = temp;
-            } else if (currDate >= endTime) {
-              voterElectionData["Previous"][key] = temp;
-            } else {
-              voterElectionData["Ongoing"][key] = temp;
-            }
+            validElectionData[key] = temp;
           }
         }
       }
-      res.send(voterElectionData);
     }
+    for (let key in validElectionData) {
+      let electionInfo = validElectionData[key];
+      let startTime = new Date(electionInfo.startTime).getTime();
+      let endTime = new Date(electionInfo.endTime).getTime();
+      if (currDate < startTime) {
+        electionData["upcoming"][key] = electionInfo;
+      } else if (currDate >= endTime) {
+        electionData["previous"][key] = electionInfo;
+      } else {
+        electionData["ongoing"][key] = electionInfo;
+      }
+    }
+    res.send(electionData[time]);
   } catch (error) {
+    console.log(error);
     res.status(400).send("bad request");
   }
 });
@@ -468,6 +472,7 @@ app.post("/api/login", async (req, res) => {
 // logout endpoint
 app.get("/api/logout", (req, res) => {
   res.clearCookie("session");
+  res.send("logged out");
 });
 
 // register endpoint
@@ -503,6 +508,104 @@ app.post("/api/register", async (req, res) => {
       res.send("bad request");
     }
   }
+});
+
+// updates election data
+app.put("/api/election/:electionID/update", verifyUser, async (req, res) => {
+  if (!req.body.isOrganizer) {
+    res.status(401).send("Unauthorized");
+    return;
+  }
+  const {
+    electionName,
+    candidates,
+    startTime,
+    endTime,
+    validVoters,
+  } = req.body;
+  try {
+    const updates = {
+      candidates: candidates,
+      startTime: humanToEpoch(startTime),
+      endTime: humanToEpoch(endTime),
+      validVoters: validVoters,
+      electionName: electionName,
+    };
+
+    await db.ref("elections/" + req.params.electionID).update(updates);
+    res.send({ electionID: req.params.electionID });
+  } catch (error) {
+    res.status(400).send("bad request");
+  }
+});
+
+// returns an object with the election winner, an array with each candidates name and their vote count,
+// and total number of votes casted during the election
+app.get("/api/election/:electionID/result", verifyUser, async (req, res) => {
+  const { userID } = req.body;
+  try {
+    let Account = await userAccount(userID);
+    let electionDetails = await getElectionData(req.params.electionID, false);
+    if (Account === null || electionDetails === null) {
+      res.status(400).send("bad request");
+      return;
+    }
+    const provider = new HDWalletProvider({
+      mnemonic: mnemonic,
+      providerOrUrl: URL,
+      addressIndex: Account,
+      numberOfAddresses: 1,
+    });
+    const web3 = new Web3(provider);
+    const contract = await new web3.eth.Contract(abi, electionDetails.address);
+
+    let electionResults = {};
+    const numOfCandidates = await contract.methods.numberOfCandidates().call();
+    let tempResults = [];
+    let numVotes = 0;
+    for (let i = 0; i < numOfCandidates; i++) {
+      let candidate = await contract.methods.candidates(i).call();
+      tempResults.push({ name: candidate.name, votes: candidate.voteCount });
+      numVotes += parseInt(candidate.voteCount);
+    }
+    const winner = await contract.methods.getWinner().call();
+    electionResults["totalVotes"] = numVotes;
+    electionResults["results"] = tempResults;
+    electionResults["winner"] = winner;
+
+    res.send(electionResults);
+    provider.engine.stop();
+  } catch (error) {
+    let response = "bad request";
+    const msg = error.message;
+    if (msg.includes("Election end time has not passed")) {
+      response = "Election has not ended";
+    }
+    res.status(400).send(response);
+  }
+});
+
+app.get("/api/user/info", verifyUser, async (req, res) => {
+  const { userID, isOrganizer } = req.body;
+  var starCountRef = db.ref("users/" + userID);
+  starCountRef.on("value", (snapshot) => {
+    const data = snapshot.val();
+    if (isOrganizer) {
+      res.send({
+        name: data.name,
+        email: data.email,
+        userID: userID,
+        accountType: "Organizer",
+      });
+    } else {
+      res.send({
+        name: data.name,
+        email: data.email,
+        userID: userID,
+        accountType: "Voter",
+      });
+    }
+  });
 });
 
 app.listen(port, () => {

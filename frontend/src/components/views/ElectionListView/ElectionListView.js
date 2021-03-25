@@ -9,6 +9,9 @@ import DoneIcon from "@material-ui/icons/Done";
 import Typography from "@material-ui/core/Typography";
 import Divider from "@material-ui/core/Divider";
 import Container from "@material-ui/core/Container";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import Fade from "@material-ui/core/Fade";
+import Slide from "@material-ui/core/Slide";
 import format from "date-fns/format";
 import parseJSON from "date-fns/parseJSON";
 import distanceInWordsToNow from "date-fns/formatDistanceToNow";
@@ -39,34 +42,15 @@ const useStyles = makeStyles({
 
 // Parse election data from a JSON response
 function parseElections(data) {
-    const elections = Object.keys(data);
-    const time = new Date();
+    let result = {};
 
-    let result = {
-        Upcoming: [],
-        Previous: [],
-        Ongoing: [],
-    };
-
-    for (let i = 0; i < elections.length; i++) {
-        const election = data[elections[i]];
+    for (let id in data) {
+        const election = data[id];
         const startTime = parseJSON(election.startTime);
         const endTime = parseJSON(election.endTime);
         election.startTime = startTime;
         election.endTime = endTime;
-        election.electionID = elections[i];
-        // election ended
-        if (isPast(endTime)) {
-            result["Previous"].push(election);
-        }
-        // election hasn't started
-        else if (isFuture(startTime)) {
-            result["Upcoming"].push(election);
-        }
-        // election is in progress
-        else {
-            result["Ongoing"].push(election);
-        }
+        result[id] = election;
     }
     return result;
 }
@@ -74,25 +58,6 @@ function parseElections(data) {
 export default function ElectionListView(props) {
     const classes = useStyles();
     const [value, setValue] = React.useState(0);
-    const [elections, setElections] = React.useState({
-        Upcoming: [],
-        Previous: [],
-        Ongoing: [],
-    });
-
-    // get elections for this user
-    useEffect(() => {
-        const result = axios
-            .get("http://localhost:5000/api/election", {
-                withCredentials: true,
-            })
-            .then((response) => {
-                setElections(parseElections(response.data));
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    }, []);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -114,23 +79,27 @@ export default function ElectionListView(props) {
                     <Tab icon={<DoneIcon />} label="Concluded elections" />
                 </Tabs>
             </Paper>
-            <Container>
-                <TabPanel value={value} index={0}>
-                    <Typography variant="h4">Current elections</Typography>
-                    <Divider className={classes.divider} />
-                    <ElectionList elections={elections} type={"Ongoing"} />
-                </TabPanel>
-                <TabPanel value={value} index={1}>
-                    <Typography variant="h4">Upcoming elections</Typography>
-                    <Divider className={classes.divider} />
-                    <ElectionList elections={elections} type={"Upcoming"} />
-                </TabPanel>
-                <TabPanel value={value} index={2}>
-                    <Typography variant="h4">Concluded elections</Typography>
-                    <Divider className={classes.divider} />
-                    <ElectionList elections={elections} type={"Previous"} />
-                </TabPanel>
-            </Container>
+            <Fade in>
+                <Container>
+                    <TabPanel value={value} index={0}>
+                        <Typography variant="h4">Current elections</Typography>
+                        <Divider className={classes.divider} />
+                        <ElectionList type={"ongoing"} />
+                    </TabPanel>
+                    <TabPanel value={value} index={1}>
+                        <Typography variant="h4">Upcoming elections</Typography>
+                        <Divider className={classes.divider} />
+                        <ElectionList type={"upcoming"} />
+                    </TabPanel>
+                    <TabPanel value={value} index={2}>
+                        <Typography variant="h4">
+                            Concluded elections
+                        </Typography>
+                        <Divider className={classes.divider} />
+                        <ElectionList type={"previous"} />
+                    </TabPanel>
+                </Container>
+            </Fade>
         </div>
     );
 }
@@ -158,22 +127,56 @@ function TabPanel(props) {
 // Represents a single 'tab' containing a list of elections
 function ElectionList(props) {
     const classes = useStyles();
-    const elections = props.elections[props.type];
-    if (elections && elections.length > 0) {
+    const [elections, setElections] = React.useState({});
+    const [loading, setLoading] = React.useState(false);
+
+    // get elections for this user
+    useEffect(() => {
+        setLoading(true);
+        const result = axios
+            .get("http://localhost:5000/api/election", {
+                params: {
+                    time: props.type,
+                },
+                withCredentials: true,
+            })
+            .then((response) => {
+                setElections(parseElections(response.data));
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.log(error);
+                setLoading(false);
+            });
+    }, []);
+
+    // If the elections are loading, display a progress icon
+    if (loading) {
+        return (
+            <Fade in={loading}>
+                <Container>
+                    <CircularProgress />
+                </Container>
+            </Fade>
+        );
+    }
+    // If there are elections in the list, display
+    if (elections && Object.keys(elections).length > 0) {
         return (
             <div>
-                {elections.map((c) => {
+                {Object.keys(elections).map((id) => {
+                    const c = elections[id];
                     // set up duration string
                     let duration = "";
                     let range = `${format(
                         c.startTime,
                         "d MMM yyyy HH:mm"
                     )} to ${format(c.endTime, "d MMM yyyy HH:mm")}`;
-                    if (props.type === "Upcoming") {
+                    if (props.type === "upcoming") {
                         duration = `Starts in ${distanceInWordsToNow(
                             c.startTime
                         )}`;
-                    } else if (props.type === "Previous") {
+                    } else if (props.type === "previous") {
                         duration = `Ended ${distanceInWordsToNow(
                             c.endTime
                         )} ago`;
@@ -181,45 +184,79 @@ function ElectionList(props) {
                         duration = `Ends in ${distanceInWordsToNow(c.endTime)}`;
                     }
                     return (
-                        <Paper className={classes.paper}>
-                            <Grid container alignItems="center" spacing={3}>
-                                <Grid item xs={10}>
-                                    <Typography variant="h6">
-                                        {c.electionName}
-                                    </Typography>
-                                    <Tooltip title={range} arrow>
-                                        <Typography
-                                            variant="subtitle2"
-                                            display="inline"
-                                        >
-                                            {duration}
+                        <Fade in={!loading}>
+                            <Paper className={classes.paper}>
+                                <Grid container alignItems="center" spacing={3}>
+                                    <Grid item xs={10}>
+                                        <Typography variant="h6">
+                                            {c.electionName}
                                         </Typography>
-                                    </Tooltip>
+                                        {/* show full date range when hovering on duration */}
+                                        <Tooltip title={range} arrow>
+                                            <Typography
+                                                variant="subtitle2"
+                                                display="inline"
+                                            >
+                                                {duration}
+                                            </Typography>
+                                        </Tooltip>
+                                    </Grid>
+                                    <Grid item xs={2}>
+                                        <ElectionButton
+                                            id={id}
+                                            type={props.type}
+                                        />
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={2}>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        component={Link}
-                                        to={`elections/${c.electionID}`}
-                                    >
-                                        View Election
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                        </Paper>
+                            </Paper>
+                        </Fade>
                     );
                 })}
             </div>
         );
     }
+    // If the list exists but there are no elections for this search, alert the user
+    if (elections) {
+        return (
+            <div>
+                <Typography variant="h5">No elections found </Typography>
+                <Typography>
+                    If you believe this is an error, contact your organization's
+                    administrator.
+                </Typography>
+            </div>
+        );
+    }
+}
+
+// Represents a button that changes contents based on the election results
+function ElectionButton(props) {
+    let text = "View Election"
+    let link = "";
+    let disabled = false;
+
+    if (props.type === "ongoing") {
+        text = "Cast Ballot";
+        link = `elections/${props.id}/ballot`;
+    }
+    else if (props.type === "upcoming") {
+        text = "Preview Ballot";
+        link = `elections/${props.id}/preview`;
+    }
+    else if (props.type === "previous") {
+        text = "View Results";
+        link = `elections/${props.id}/results`;
+    }
+
     return (
-        <div>
-            <Typography variant="h5">No elections found </Typography>
-            <Typography>
-                If you believe this is an error, contact your organization's
-                administrator.
-            </Typography>
-        </div>
+        <Button
+            variant="contained"
+            color="primary"
+            component={Link}
+            to={link}
+            disabled={disabled}
+        >
+            {text}
+        </Button>
     );
 }
