@@ -449,6 +449,20 @@ app.put("/api/election/:electionID/deploy", verifyUser, async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const idToken = req.body.idToken.toString();
   const expiresIn = 59 * 60 * 1000; // session cookie expires in 59 minutes
+  let isOrganizer, uid;
+  await admin
+    .auth()
+    .verifyIdToken(idToken)
+    .then((decodedToken) => {
+      uid = decodedToken.uid;
+      isOrganizer = decodedToken.isOrganizer;
+    })
+    .catch((error) => {
+      res.end("Unauthorized");
+    });
+
+  const ref = db.ref("users/" + uid);
+  const name = await (await ref.once("value")).val().name;
   admin
     .auth()
     .createSessionCookie(idToken, { expiresIn })
@@ -456,7 +470,7 @@ app.post("/api/login", async (req, res) => {
       (sessionCookie) => {
         const options = { maxAge: expiresIn, httpOnly: true };
         res.cookie("session", sessionCookie, options);
-        res.end("Success");
+        res.send({ isOrganizer: isOrganizer, name: name });
       },
       (error) => {
         res.status(401);
@@ -485,7 +499,6 @@ app.post("/api/register", async (req, res) => {
     await admin
       .auth()
       .setCustomUserClaims(userRecord.uid, { isOrganizer: isOrganizer });
-
     const accRef = db.ref("accounts");
     let acc = 10;
     const snapshot = await accRef.once("value");
