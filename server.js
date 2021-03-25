@@ -38,7 +38,7 @@ app.use(cookieParser());
 // cors
 const cors = require("cors");
 if (env !== "production") {
-  app.use(cors());
+  app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 }
 
 //helper functions
@@ -245,7 +245,8 @@ app.get("/api/election/:electionID", verifyUser, async (req, res) => {
 // if user is voter, return all elections for which the user is eligible. Data for each election
 // returned here contains everything except list of voters
 app.get("/api/election/", verifyUser, async (req, res) => {
-  const { userID, isOrganizer, time } = req.body;
+  const { userID, isOrganizer } = req.body;
+  const time = req.query.time;
   try {
     const electionRef = db.ref("elections");
     const snapshot = await electionRef.once("value");
