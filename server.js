@@ -448,6 +448,16 @@ app.put("/api/election/:electionID/deploy", verifyUser, async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const idToken = req.body.idToken.toString();
   const expiresIn = 59 * 60 * 1000; // session cookie expires in 59 minutes
+  let isOrganizer;
+  admin
+    .auth()
+    .verifyIdToken(idToken)
+    .then((decodedToken) => {
+      isOrganizer = decodedToken.isOrganizer;
+    })
+    .catch((error) => {
+      res.end("Unauthorized");
+    });
   admin
     .auth()
     .createSessionCookie(idToken, { expiresIn })
@@ -455,7 +465,7 @@ app.post("/api/login", async (req, res) => {
       (sessionCookie) => {
         const options = { maxAge: expiresIn, httpOnly: true };
         res.cookie("session", sessionCookie, options);
-        res.end("Success");
+        res.end({ isOrganizer: isOrganizer });
       },
       (error) => {
         res.status(401);
