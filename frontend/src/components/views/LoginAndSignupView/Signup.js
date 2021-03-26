@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
   },
   paperStyle: {
     padding: 20,
-    height: '55vh',
+    height: '65vh',
     width: 700,
     margin: '20px auto'
   },
@@ -51,8 +51,9 @@ export default function Signup() {
           setEmail(e.target.value);
         else if (e.target.name === 'password')
           setPassword(e.target.value);
-        else if (e.target.name === 'checked')
+        else if (e.target.name === 'checked'){
           setChecked(e.target.checked);
+        }
         if (name && email && password &&
              errors.name === '' && errors.email === '' && errors.password === '' )
           setDisabled(false)
