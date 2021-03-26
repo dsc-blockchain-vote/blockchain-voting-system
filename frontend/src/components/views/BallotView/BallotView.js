@@ -17,31 +17,42 @@ export default function BallotView(props) {
     const [id, setId] = useState(props.location.state.id);
     const [title, setTitle] = useState(id?props.location.state.election.electionName:"Election");
     const [otherEnabled, setOtherEnabled] = useState(true);
-    const [candidates, setCandidates] = useState([]);
-    var [vote, setVote] = useState("");
+    let [candidates, setCandidates] = useState([]);
+    let [voted, setVoted] = useState(false);
+    let [votedFor, setVotedFor] = useState("");
 
-     useEffect(() => {
+    useEffect(() => {
         console.log(props.location.state.election)
-        axios.get(`http://localhost:5000/api/election/${id}`)    
+        candidates = props.location.state.election.candidates.map((c, i) => {
+            return {id: i, name: c}
+        })
+        setCandidates(candidates);
+        axios.get(`http://localhost:5000/api/election/${id}`, {withCredentials: true})    
         .then(response => {
-            console.log(response);
-            setCandidates(response.data.candidates);
-            setVote(response.data.voted === true ? response.data.votedFor.toString() : ""); 
+            console.log(response)
+            voted = response.data.voted
+            setVoted(voted)
+            console.log(voted)
+            votedFor = voted === true ? response.data.votedFor : "";
+            setVotedFor(votedFor);
+            console.log(votedFor)
         })
         .catch(error => {
             console.log(error);
           })
-        console.log('after')
     }, []);
 
     const submitForm = (event, value) => {
         event.preventDefault();
         console.log({id, value})
-        axios.put(`http://localhost:5000/api/election/${id}/vote`, value)
+        axios.put(`http://localhost:5000/api/election/${id}/vote`, {"candidateID": value}, {withCredentials: true})
             .then(response => {
                 event.preventDefault();
                 console.log(value);
-                console.log("Voted successfully!");
+                alert(`Voted successfully for Candidate 
+                ${props.location.state.election.candidates[parseInt(votedFor)]} with transaction hash
+                ${response.data.transactionHash}. Take a screenshot of this or save this transaction
+                hash safely somewhere, since you won't be able to view this hash again!`)
             })
             .catch(error => {
               console.log(error);
@@ -64,7 +75,8 @@ export default function BallotView(props) {
 
                                 candidates={candidates}
                                 other={otherEnabled}
-                                vote= {vote}
+                                vote= {votedFor}
+                                name={props.location.state.election.candidates[parseInt(votedFor)]}
                             />
                         </Grid>
                     </Grid>
@@ -74,28 +86,26 @@ export default function BallotView(props) {
         );
     }
 
-class BallotList extends Component {
-    state = {
-        value: this.props.vote,
-        disabled: true,
-    };
+function BallotList(props) {
+    const [value, setValue] = useState("")
+    const [disabled, setDisabled] = useState(true)
 
-    onChange(e) {
-        this.setState({ value: e.target.value });
-        this.setState({ disabled: false });
+    const onChange = (e) => {
+        console.log(e.target.value)
+        setValue(e.target.value );
+        setDisabled(false);
     }
-
-    render() {
+    if (props.vote === ""){
         return (
-            <form onSubmit={(e) => this.props.submitForm(e, this.state.value)}>
+            <form onSubmit={(e) => props.submitForm(e, value)}>
                 <FormControl component="fieldset">
                     <FormLabel component="legend">List of candidates</FormLabel>
-                    <RadioGroup
-                        aria-label="ballot"
-                        value={this.state.value}
-                        onChange={(e) => this.onChange(e)}
-                    >
-                        {this.props.candidates.map((c) => {
+                        <RadioGroup
+                            aria-label="ballot"
+                            value={value}
+                            onChange={(e) => onChange(e)}
+                        >
+                        {props.candidates.map((c) => {
                             return (
                                 <FormControlLabel
                                     key={c.id}
@@ -105,17 +115,24 @@ class BallotList extends Component {
                                 />
                             );
                         })}
-                    </RadioGroup>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        disabled={this.state.disabled}
-                    >
-                        Cast Ballot
-                    </Button>
+                        </RadioGroup>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            disabled={disabled}
+                        >
+                            Cast Ballot
+                        </Button>
                 </FormControl>
             </form>
+            );
+    }
+    else {
+        return (
+            <div>
+                <Typography variant="h5">You have already voted for Candidate {props.name}</Typography>
+            </div>
         );
     }
 }
