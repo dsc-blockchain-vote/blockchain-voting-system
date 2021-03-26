@@ -24,8 +24,8 @@ export default function BallotView(props) {
         axios.get(`http://localhost:5000/api/election/${id}`)    
         .then(response => {
             console.log(response);
-            /* setCandidates(response.data.candidates);
-            setVote(response.data.voted === true ? response.data.votedFor : ""); */
+            setCandidates(response.data.candidates);
+            setVote(response.data.voted === true ? response.data.votedFor : ""); 
         })
         .catch(error => {
             console.log(error);

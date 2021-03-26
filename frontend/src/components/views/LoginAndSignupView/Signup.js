@@ -43,6 +43,7 @@ export default function Signup() {
   var [disabled, setDisabled] = useState(true);
   var [checked, setChecked] = useState(false);
 
+  //function to display the input textbox for the election title and for picking the start and end dates 
   const handleInputChange = (e) => {
         validation(e.target.name, e.target.value)
         if (e.target.name === 'name')
@@ -61,6 +62,7 @@ export default function Signup() {
           setDisabled(true)
     }
 
+  //checks the input fields for any kind of invalid input that was entered
   const validation = (name, value) => {
       if (name === 'name'){
           if (value.length === 0)
@@ -76,6 +78,7 @@ export default function Signup() {
         errors.password = value.length < 6? 'Password should be atleast 6 characters long':'';
   }
 
+  //signs up this user by storing their details in teh backend
   const handleSubmit = () => {
     if (name && email && password && errors.name === '' && 
     errors.email === '' && errors.password === '' ){

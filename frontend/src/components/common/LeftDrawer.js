@@ -46,6 +46,7 @@ const useStyles = makeStyles((theme) => ({
 export default function LeftDrawer() {
     const classes = useStyles();
 
+    //clears the session cookie to logout the current user
     const logout = () => {
         axios.get('http://localhost:5000/api/logout', {withCredentials: true})
         .then(response => {
