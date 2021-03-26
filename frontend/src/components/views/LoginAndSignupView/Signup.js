@@ -32,7 +32,7 @@ const emailRegex = RegExp(
 );
 
 //function to display the input textbox for the election title and for picking the start and end dates 
-export default function Signup(props) {
+export default function Signup() {
 
   const classes = useStyles();
 
