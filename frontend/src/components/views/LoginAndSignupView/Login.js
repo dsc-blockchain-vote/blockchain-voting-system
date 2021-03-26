@@ -41,6 +41,7 @@ export default function Component() {
   var [errors, setErrors] = useState({email: '', password: ''});
   var [disabled, setDisabled] = useState(true)
 
+  //stores the values of any input fields that are updated and also checks for any input errors
   const handleInputChange = (e) => {
         validation(e.target.name, e.target.value)
         if (e.target.name === 'email')
@@ -53,6 +54,7 @@ export default function Component() {
           setDisabled(true)
     }
 
+  //checks the input fields for any kind of invalid input that was entered
   const validation = (name, value) => {
       if (name === 'email')
         errors.email = (emailRegex.test(value))? '': 'Invalid email ID';
@@ -61,6 +63,7 @@ export default function Component() {
       }
   }
 
+  //logs in the cuurent user by creating a new session cookie
   const handleSubmit = () => {
     if (email && password && errors.email === '' && errors.password === ''){
         firebase.initializeApp({
