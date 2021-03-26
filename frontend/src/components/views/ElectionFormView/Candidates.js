@@ -62,13 +62,13 @@ export default function Candidates(props){
                                 </ListItem>
                             </List>
                         </Grid>
-
-                        <Grid item xs={6}>
+                        
+                        {/* <Grid item xs={6}>
                             <FormControlLabel
                                 control={<Checkbox color="primary" />}
                                 label="Enable 'Other' candidates"
                             />
-                        </Grid>
+                        </Grid> */}
                     </Grid>
                 </Box>
             </Paper>
