@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
   },
   paperStyle: {
     padding: 20,
-    height: '55vh',
+    height: '65vh',
     width: 700,
     margin: '20px auto'
   },
@@ -32,7 +32,7 @@ const emailRegex = RegExp(
 );
 
 //function to display the input textbox for the election title and for picking the start and end dates 
-export default function Signup(props) {
+export default function Signup() {
 
   const classes = useStyles();
 
@@ -43,6 +43,8 @@ export default function Signup(props) {
   var [disabled, setDisabled] = useState(true);
   var [checked, setChecked] = useState(false);
 
+
+  //function to display the input textbox for the election title and for picking the start and end dates 
   const handleInputChange = (e) => {
         validation(e.target.name, e.target.value)
         if (e.target.name === 'name')
@@ -60,6 +62,7 @@ export default function Signup(props) {
           setDisabled(true)
     }
 
+  //checks the input fields for any kind of invalid input that was entered
   const validation = (name, value) => {
       if (name === 'name'){
           if (value.length === 0)
@@ -75,6 +78,8 @@ export default function Signup(props) {
         errors.password = value.length < 6? 'Password should be atleast 6 characters long':'';
   }
 
+
+  //signs up this user by storing their details in teh backend
   const handleSubmit = () => {
     if (name && email && password && errors.name === '' && 
     errors.email === '' && errors.password === '' ){
