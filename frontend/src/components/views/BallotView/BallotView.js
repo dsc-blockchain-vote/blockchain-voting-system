@@ -21,27 +21,27 @@ export default function BallotView(props) {
     let [voted, setVoted] = useState(false);
     let [votedFor, setVotedFor] = useState("");
 
+    //gets the candidate names for thsi election from the backend and whether this voter has voted 
+    // in the election before or not
     useEffect(() => {
-        console.log(props.location.state.election)
         candidates = props.location.state.election.candidates.map((c, i) => {
             return {id: i, name: c}
         })
         setCandidates(candidates);
         axios.get(`http://localhost:5000/api/election/${id}`, {withCredentials: true})    
         .then(response => {
-            console.log(response)
             voted = response.data.voted
             setVoted(voted)
-            console.log(voted)
             votedFor = voted === true ? response.data.votedFor : "";
             setVotedFor(votedFor);
-            console.log(votedFor)
         })
         .catch(error => {
             console.log(error);
           })
     }, []);
 
+    //registers this voter's vote on the blockchain network and shows them their
+    // transaction hash, of voted successfully
     const submitForm = (event, value) => {
         event.preventDefault();
         console.log({id, value})
@@ -86,15 +86,18 @@ export default function BallotView(props) {
         );
     }
 
+//function to display all the candidate names in a list 
 function BallotList(props) {
     const [value, setValue] = useState("")
     const [disabled, setDisabled] = useState(true)
 
+    //updates the candidate chosen by the voter
     const onChange = (e) => {
         console.log(e.target.value)
         setValue(e.target.value );
         setDisabled(false);
     }
+    //displays the list of candidates if the voter hasn't voted before
     if (props.vote === ""){
         return (
             <form onSubmit={(e) => props.submitForm(e, value)}>
@@ -128,6 +131,8 @@ function BallotList(props) {
             </form>
             );
     }
+    //if the voter has voted before, they it just gives a message displaying the candidate for whom
+    //this voter voted
     else {
         return (
             <div>
