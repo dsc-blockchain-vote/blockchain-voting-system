@@ -333,6 +333,7 @@ app.put("/api/election/:electionID/vote", verifyUser, async (req, res) => {
     res.send({ "transaction hash": voteTx.transactionHash });
     provider.engine.stop();
   } catch (error) {
+    console.log(error)
     let response = "bad request";
     const msg = error.message;
     if (msg.includes("Has no right to vote")) {
