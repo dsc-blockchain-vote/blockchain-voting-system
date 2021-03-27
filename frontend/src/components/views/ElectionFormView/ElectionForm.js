@@ -18,21 +18,26 @@ const emailRegex = RegExp(
 class ElectionForm extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            title: "",
-            start: new Date(),
-            end: new Date(),
-            candidates: [],
-            voters: [],
-            errors: {
+        if (this.props.edit) {
+            this.state = this.props.data;
+        }
+        else {
+            this.state = {
                 title: "",
-                candidateName: [],
-                voterName: [],
-                voterID: [],
-                email: [],
-            },
-            loading: true,
-        };
+                start: new Date(),
+                end: new Date(),
+                candidates: [],
+                voters: [],
+                errors: {
+                    title: "",
+                    candidateName: [],
+                    voterName: [],
+                    voterID: [],
+                    email: [],
+                },
+                loading: true,
+            }
+        }
     }
 
     useStyles = makeStyles((theme) => ({
