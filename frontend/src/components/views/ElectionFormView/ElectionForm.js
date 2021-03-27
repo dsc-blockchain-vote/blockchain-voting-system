@@ -10,13 +10,14 @@ import parseISO from "date-fns/parseISO";
 import axios from "axios";
 import Fade from "@material-ui/core/Fade/Fade";
 import { CircularProgress } from "@material-ui/core";
-import getUnixTime from "date-fns/getUnixTime";
 
 const emailRegex = RegExp(
     /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
 );
 
-//creates the entire form for an  organisation to create an election
+// The form for creating and editing elections
+// TODO: We should split ElectionForm into CreateElectionForm and EditElectionForm to make this code significantly easier to maintain
+// This code is the result of a series of questionable design decisions
 class ElectionForm extends Component {
     constructor(props) {
         super(props);
@@ -29,6 +30,7 @@ class ElectionForm extends Component {
             errors: {
                 title: "",
                 candidateName: [],
+                voterName: [],
                 voterID: [],
                 email: [],
             },
@@ -167,7 +169,7 @@ class ElectionForm extends Component {
         }
     };
 
-    //send election data to server
+    // Create new election
     createElection = () => {
         console.log(this.state.errors.candidateName);
         if (
@@ -213,6 +215,8 @@ class ElectionForm extends Component {
                 "Check the input fields again for any invalid or empty entry"
             );
     };
+    // Edit an election
+    // TODO: consider either merging editElection and createElection or splitting editing and creating election forms into two completely different components
     editElection = () => {
         console.log(this.state.errors.candidateName);
         if (
