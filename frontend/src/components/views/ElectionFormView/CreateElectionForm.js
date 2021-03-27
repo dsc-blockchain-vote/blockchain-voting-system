@@ -6,11 +6,21 @@ import Candidates from "./Candidates";
 import VotersList from "./VotersList";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
-import firebaseDb from "../../../firebase";
+import axios from 'axios';
+
 
 const emailRegex = RegExp(
     /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
   );
+
+  const useStyles = makeStyles((theme) => ({
+    root: {
+        flexGrow: 1,
+    },
+    divider: {
+        marginTop: theme.spacing(3),
+    }
+}));
 
 //creates the entire form for an individual or organisation to create an election
 class CreateElectionForm extends Component{
@@ -20,16 +30,8 @@ class CreateElectionForm extends Component{
             title: "",
             start: new Date(),
             end: new Date(),
-            candidates: [
-                { id: 1, name: "Name 1" },
-                { id: 2, name: "Name 2" },
-                { id: 3, name: "Name 3" },
-            ],
-            voters: [
-                { id: 1, name: "Name 1", voterID: 123, email: 'abc@gmail.com' },
-                { id: 2, name: "Name 2", voterID: 456, email: 'xyz@gmail.com' },
-                { id: 3, name: "Name 3", voterID: 789, email: 'test@gmail.com' },
-            ],
+            candidates: [],
+            voters: [],
             errors: {
                 title: '',
                 candidateName: [],
@@ -39,15 +41,6 @@ class CreateElectionForm extends Component{
             }
         }
     }
-    
-    useStyles = makeStyles((theme) => ({
-        root: {
-            flexGrow: 1,
-        },
-        divider: {
-            marginTop: theme.spacing(3),
-        }
-    }));
 
     //changes the value stored in title and the candidates list on receiving an input
     handleInputChange = (e, id) => {
@@ -136,7 +129,7 @@ class CreateElectionForm extends Component{
         if (name === 'deleteCandidate'){
             const candidates = this.state.candidates.filter((c) => c.id !== id);
             this.setState({ candidates });
-        }
+        }   
         else if (name === 'deleteVoter'){
             const voters = this.state.voters.filter((v) => v.id !== id);
             this.setState({ voters });
@@ -163,59 +156,60 @@ class CreateElectionForm extends Component{
 
     //stores the election details entered into a firebase database called 'election'
     createElection = () =>{
-        console.log(this.state.errors.candidateName)
-        if (this.state.errors.title === '' && this.checkForErrors('candidate') === true && 
-        this.checkForErrors('voterName') === true && this.checkForErrors('voterID') === true && 
-        this.checkForErrors('email') === true && this.state.title && this.state.start &&
+        if (this.state.errors.title === '' && this.checkForErrors('candidate') === false && 
+        this.checkForErrors('voterName') === false && this.checkForErrors('voterID') === false && 
+        this.checkForErrors('email') === false && this.state.title && this.state.start &&
         this.state.end && this.checkForErrors('candidatesEmpty') === false && 
         this.checkForErrors('votersEmpty') === false){
-                const election = {
-                    title: this.state.title,
-                    startDate: this.state.start.toString(),
-                    endDate: this.state.end.toString(),
-                    candidates: this.state.candidates,
-                    voters: this.state.voters
-                }
-                firebaseDb.child('election').push(
-                    election,
-                    err => {
-                        if (err)
-                            console.log(err)
-                    })
-            }
+            axios.post('http://localhost:5000/', this.state)
+            .then(response => {
+              console.log('Created an election Succesfully!');
+            })
+            .catch(error => {
+              console.log(error);
+            })
+        }
         else
-            alert('Check the input fields again for any invalid or empty entry')
+            alert("Check the input fields again for any invalid or empty entry")
     }
     
     //checks if there are no errors or no empty fields 
     checkForErrors = (name) =>{
         if (name === 'candidate'){
             for(var i=0; i < this.state.errors.candidateName.length; i++){
-                if (this.state.errors.candidateName[i] != '')
-                    return false
+                if (this.state.errors.candidateName[i] != ''){
+                    this.state.disabled = true
+                    return true
+                }
             }
-            return true
+            return false
         }
         if (name === 'voterName'){
             for(var i=0; i < this.state.errors.voterName.length; i++){
-                if (this.state.errors.voterName[i] != '')
-                    return false
+                if (this.state.errors.voterName[i] != ''){
+                    this.state.disabled = true
+                    return true
+                }
             }
-            return true
+            return false
         }
         if (name === 'voterID'){
             for(var i=0; i < this.state.errors.voterID.length; i++){
-                if (this.state.errors.voterID[i] != '')
-                    return false
+                if (this.state.errors.voterID[i] != ''){
+                    this.state.disabled = true
+                    return true
+                }
             }
-            return true
+            return false
         }
         if (name === 'email'){
             for(var i=0; i < this.state.errors.email.length; i++){
-                if (this.state.errors.email[i] != '')
-                    return false
+                if (this.state.errors.email[i] != ''){
+                    this.state.disabled = true
+                    return true
+                }
             }
-            return true
+            return false
         }
         if (name ==='candidatesEmpty'){
             if (this.state.candidates.length === 0)
@@ -272,7 +266,11 @@ class CreateElectionForm extends Component{
                         errors: this.state.errors }) }/>
                 </Grid>
                 <Grid item>
-                    <Button variant="contained" color="primary" size="large" onClick={this.createElection}>
+                    <Button 
+                        variant="contained" 
+                        color="primary" 
+                        size="large" 
+                        onClick={this.createElection}>
                         Create
                     </Button>
                 </Grid>
