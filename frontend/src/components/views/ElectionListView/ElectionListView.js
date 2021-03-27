@@ -204,6 +204,7 @@ function ElectionList(props) {
                                         <ElectionButton
                                             id={id}
                                             type={props.type}
+                                            election = {c}
                                         />
                                     </Grid>
                                 </Grid>
@@ -236,7 +237,7 @@ function ElectionButton(props) {
 
     if (props.type === "ongoing") {
         text = "Cast Ballot";
-        link = `elections/${props.id}/ballot`;
+        link = `elections/${props.id}`;
     }
     else if (props.type === "upcoming") {
         text = "Preview Ballot";
@@ -252,7 +253,13 @@ function ElectionButton(props) {
             variant="contained"
             color="primary"
             component={Link}
-            to={link}
+            to={{
+                pathname: link,
+                state : {
+                    election: props.election,
+                    id: props.id
+                }
+            }}
             disabled={disabled}
         >
             {text}
