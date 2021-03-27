@@ -45,7 +45,7 @@ export default function Candidates(props){
                                             candidate = {candidate}
                                             errors = {props.errors}
                                         />
-                                    ); 
+                                    );
                                 })}
                                 <ListItem>
                                     <Button
@@ -62,7 +62,7 @@ export default function Candidates(props){
                                 </ListItem>
                             </List>
                         </Grid>
-                        
+
                         {/* <Grid item xs={6}>
                             <FormControlLabel
                                 control={<Checkbox color="primary" />}
@@ -112,5 +112,3 @@ export default function Candidates(props){
             </ListItem>
         );
     }
-
-

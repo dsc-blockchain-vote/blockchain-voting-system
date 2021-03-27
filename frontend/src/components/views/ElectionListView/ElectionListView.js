@@ -11,7 +11,6 @@ import Divider from "@material-ui/core/Divider";
 import Container from "@material-ui/core/Container";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Fade from "@material-ui/core/Fade";
-import Slide from "@material-ui/core/Slide";
 import format from "date-fns/format";
 import parseJSON from "date-fns/parseJSON";
 import distanceInWordsToNow from "date-fns/formatDistanceToNow";
