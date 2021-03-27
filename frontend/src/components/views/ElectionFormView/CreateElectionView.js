@@ -4,7 +4,7 @@ import ElectionForm from './ElectionForm';
 class CreateElectionView extends Component {
     render() { 
         return(
-            <ElectionForm/>
+            <ElectionForm edit={false}/>
         )
     }
 }

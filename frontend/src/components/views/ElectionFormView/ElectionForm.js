@@ -7,36 +7,36 @@ import VotersList from "./VotersList";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import parseISO from "date-fns/parseISO";
-import firebaseDb from "../../../firebase";
 import axios from "axios";
+import Fade from "@material-ui/core/Fade/Fade";
+import { CircularProgress } from "@material-ui/core";
+import getUnixTime from "date-fns/getUnixTime";
 
 const emailRegex = RegExp(
     /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
 );
 
-//creates the entire form for an individual or organisation to create an election
+//creates the entire form for an  organisation to create an election
 class ElectionForm extends Component {
     constructor(props) {
         super(props);
-        if (this.props.edit) {
-            this.state = this.props.data;
-        }
-        else {
-            this.state = {
+        this.state = {
+            title: "",
+            start: new Date(),
+            end: new Date(),
+            candidates: [],
+            voters: [],
+            errors: {
                 title: "",
-                start: new Date(),
-                end: new Date(),
-                candidates: [],
-                voters: [],
-                errors: {
-                    title: "",
-                    candidateName: [],
-                    voterName: [],
-                    voterID: [],
-                    email: [],
-                },
-                loading: true,
-            }
+                candidateName: [],
+                voterID: [],
+                email: [],
+            },
+        };
+        if (this.props.edit) {
+            this.loading = true;
+        } else {
+            this.loading = false;
         }
     }
 
@@ -50,41 +50,11 @@ class ElectionForm extends Component {
     }));
 
     componentDidMount() {
-        this.getData();
-    }
-
-    getData() {
-        this.setState({ loading: true });
-        // if we are editing this page:
-        if (this.props.id) {
-            const result = axios
-                .get(`http://localhost:5000/api/election/${this.props.id}`, {withCredentials: true})
-                .then((response) => {
-                    // load data into state
-                    this.setState({
-                        title: response.data["electionName"],
-                        start: parseISO(response.data["startTime"]),
-                        end: parseISO(response.data["endTime"]),
-                    });
-                    // load candidates
-                    const importCandidates = [];
-                    for (let i = 0; i < response.data["candidates"].length; i++) {
-                        importCandidates.push({id: i, name: response.data["candidates"][i]});
-                    }
-                    // load voters
-                    // const importVoters = [];
-                    // for (let i = 0; i < response["validVoters"].length; i++) {
-                    //     importVoters.push({id: i, name: response["validVoters"][i]});
-                    // }
-                    this.setState({candidates: importCandidates});
-                    this.setState({ loading: false });
-                })
-                .catch((error) => {
-                    console.log(error);
-                    this.setState({ loading: false });
-                });
+        if (this.props.edit) {
+            this.loading = true;
+            this.getData();
+            this.loading = false;
         }
-        this.setState({ loading: false });
     }
 
     //changes the value stored in title and the candidates list on receiving an input
@@ -197,7 +167,7 @@ class ElectionForm extends Component {
         }
     };
 
-    //stores the election details entered into a firebase database called 'election'
+    //send election data to server
     createElection = () => {
         console.log(this.state.errors.candidateName);
         if (
@@ -209,19 +179,80 @@ class ElectionForm extends Component {
             this.state.title &&
             this.state.start &&
             this.state.end &&
-            this.checkForErrors("candidatesEmpty") === false &&
-            this.checkForErrors("votersEmpty") === false
+            this.checkForErrors("candidatesEmpty") === false
+            // &&
+            // this.checkForErrors("votersEmpty") === false
         ) {
             const election = {
-                title: this.state.title,
-                startDate: this.state.start.toString(),
-                endDate: this.state.end.toString(),
-                candidates: this.state.candidates,
-                voters: this.state.voters,
+                electionName: this.state.title,
+                startTime: this.state.start.valueOf(),
+                endTime: this.state.end.valueOf(),
+                candidates: [],
+                validVoters: [],
             };
-            firebaseDb.child("election").push(election, (err) => {
-                if (err) console.log(err);
-            });
+            for (let c in this.state.candidates) {
+                election.candidates.push(this.state.candidates[c].name);
+            }
+            for (let v in this.state.voters) {
+                election.validVoters.push(this.state.voters[v].voterID);
+            }
+            axios({
+                method: "post",
+                url: "http://localhost:5000/api/election/create",
+                data: election,
+                withCredentials: true,
+            })
+                .then((response) => {
+                    console.log("Created election");
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        } else
+            alert(
+                "Check the input fields again for any invalid or empty entry"
+            );
+    };
+    editElection = () => {
+        console.log(this.state.errors.candidateName);
+        if (
+            this.state.errors.title === "" &&
+            this.checkForErrors("candidate") === true &&
+            this.checkForErrors("voterName") === true &&
+            this.checkForErrors("voterID") === true &&
+            this.checkForErrors("email") === true &&
+            this.state.title &&
+            this.state.start &&
+            this.state.end &&
+            this.checkForErrors("candidatesEmpty") === false
+            // &&
+            // this.checkForErrors("votersEmpty") === false
+        ) {
+            const election = {
+                electionName: this.state.title,
+                startTime: this.state.start.valueOf(),
+                endTime: this.state.end.valueOf(),
+                candidates: [],
+                validVoters: [],
+            };
+            for (let c in this.state.candidates) {
+                election.candidates.push(this.state.candidates[c].name);
+            }
+            for (let v in this.state.voters) {
+                election.validVoters.push(this.state.voters[v].voterID);
+            }
+            axios({
+                method: "put",
+                url: `http://localhost:5000/api/election/${this.props.id}/update`,
+                data: election,
+                withCredentials: true,
+            })
+                .then((response) => {
+                    console.log("Saved election settings");
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
         } else
             alert(
                 "Check the input fields again for any invalid or empty entry"
@@ -283,55 +314,128 @@ class ElectionForm extends Component {
         }
     };
 
+    getData() {
+        // if we are editing this page:
+        if (this.props.edit) {
+            const result = axios
+                .get(`http://localhost:5000/api/election/${this.props.id}`, {
+                    withCredentials: true,
+                })
+                .then((response) => {
+                    const data = {};
+                    // load data into state
+                    data.title = response.data["electionName"];
+                    data.start = parseISO(response.data["startTime"]);
+                    data.end = parseISO(response.data["endTime"]);
+                    // load candidates
+                    const importCandidates = [];
+                    if (response.data["candidates"]) {
+                        for (
+                            let i = 0;
+                            i < response.data["candidates"].length;
+                            i++
+                        ) {
+                            importCandidates.push({
+                                id: i,
+                                name: response.data["candidates"][i],
+                            });
+                        }
+                    }
+                    // load voters
+                    const importVoters = [];
+                    if (response.data["validVoters"]) {
+                        for (
+                            let i = 0;
+                            i < response.data["validVoters"].length;
+                            i++
+                        ) {
+                            importVoters.push({
+                                id: i,
+                                name: response.data["validVoters"][i],
+                            });
+                        }
+                    }
+                    data.candidates = importCandidates;
+                    data.voters = importVoters;
+                    this.setState(data);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        }
+    }
+
     render() {
+        if (this.loading) {
+            return (
+                <div
+                    style={{
+                        position: "absolute",
+                        left: "50%",
+                        top: "50%",
+                        transform: "translate(-50%, -50%)",
+                    }}
+                >
+                    <CircularProgress />
+                </div>
+            );
+        }
+        let onClick = this.createElection;
+        let text = "Create";
+        if (this.props.edit) {
+            onClick = this.editElection;
+            text = "Save";
+        }
         return (
-            <Container maxWidth="lg">
-                <Grid container spacing={3}>
-                    <Grid item xs={12}>
-                        <Settings
-                            {...{
-                                startChange: this.handleStartChange,
-                                endChange: this.handleEndChange,
-                                inputChange: this.handleInputChange,
-                                title: this.state.title,
-                                start: this.state.start,
-                                end: this.state.end,
-                                errors: this.state.errors,
-                            }}
-                        />
+            <Fade in={!this.loading}>
+                <Container maxWidth="lg">
+                    <Grid container justify="flex-end" spacing={3}>
+                        <Grid item xs={12}>
+                            <Settings
+                                {...{
+                                    startChange: this.handleStartChange,
+                                    endChange: this.handleEndChange,
+                                    inputChange: this.handleInputChange,
+                                    title: this.state.title,
+                                    start: this.state.start,
+                                    end: this.state.end,
+                                    errors: this.state.errors,
+                                }}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Candidates
+                                {...{
+                                    addOrDelete: this.addOrDelete,
+                                    inputChange: this.handleInputChange,
+                                    candidates: this.state.candidates,
+                                    errors: this.state.errors,
+                                }}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <VotersList
+                                {...{
+                                    addOrDelete: this.addOrDelete,
+                                    inputChange: this.handleInputChange,
+                                    voters: this.state.voters,
+                                    errors: this.state.errors,
+                                }}
+                            />
+                        </Grid>
+                        <Grid item>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                size="large"
+                                onClick={onClick}
+                            >
+                                {text}
+                            </Button>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={12}>
-                        <Candidates
-                            {...{
-                                addOrDelete: this.addOrDelete,
-                                inputChange: this.handleInputChange,
-                                candidates: this.state.candidates,
-                                errors: this.state.errors,
-                            }}
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <VotersList
-                            {...{
-                                addOrDelete: this.addOrDelete,
-                                inputChange: this.handleInputChange,
-                                voters: this.state.voters,
-                                errors: this.state.errors,
-                            }}
-                        />
-                    </Grid>
-                    <Grid item>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            size="large"
-                            onClick={this.createElection}
-                        >
-                            Create
-                        </Button>
-                    </Grid>
-                </Grid>
-            </Container>
+                </Container>
+            </Fade>
         );
     }
 }
