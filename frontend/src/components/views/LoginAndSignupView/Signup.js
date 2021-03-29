@@ -10,7 +10,6 @@ import Checkbox from '@material-ui/core/Checkbox';
 import '../../../App.css';
 import axios from 'axios';
 import { makeStyles } from "@material-ui/core";
-import { AddAlert } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   helperText: {
