@@ -10,6 +10,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import '../../../App.css';
 import axios from 'axios';
 import { makeStyles } from "@material-ui/core";
+import { AddAlert } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   helperText: {
@@ -87,11 +88,11 @@ export default function Signup() {
             let data = {name, email, password, check}; 
             axios.post('http://localhost:5000/api/register', data)
             .then(response => {
-              console.log('Signed up Succesfully!');
+              alert('Signed up Succesfully!');
               window.location.href = '/elections'
             })
             .catch(error => {
-              console.log(error);
+              alert(error.message);
             })
         }
     }
