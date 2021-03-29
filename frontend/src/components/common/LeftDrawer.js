@@ -6,7 +6,6 @@ import Divider from "@material-ui/core/Divider";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import PropTypes from 'prop-types';
-import UserInfo from "./UserInfo";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import AllInboxIcon from '@material-ui/icons/AllInbox';
 import BallotIcon from '@material-ui/icons/Ballot';
@@ -14,8 +13,9 @@ import CreateIcon from '@material-ui/icons/Create';
 import SettingsIcon from '@material-ui/icons/Settings';
 import axios from 'axios';
 import Button from "@material-ui/core/Button";
-import { Route, MemoryRouter } from 'react-router';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link, Link as RouterLink } from 'react-router-dom';
+import IconButton from "@material-ui/core/IconButton";
+import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 
 const drawerWidth = 240;
 
@@ -55,7 +55,7 @@ export default function LeftDrawer() {
           window.location.assign("/login");
         })
         .catch(error => {
-          console.log(error);
+          alert(error.message);
         })
     }
 
@@ -70,21 +70,19 @@ export default function LeftDrawer() {
         >
             {/* TODO: align logo in toolbar to navbar */}
             <div className={classes.toolbar} />
-            <UserInfo name="Current User" id="studentid"/>
+            <IconButton component={Link} to="/profile">
+                  <AccountCircleIcon fontSize="large"/>
+            </IconButton>
 
             <Divider />
             <List>
                 <ListItemLink to="/elections" primary="Elections List" icon={<AllInboxIcon />} />
                 <ListItemLink to="/create" primary="Create Election" icon={<CreateIcon />} />
-                <ListItemLink to="/ballot" primary="Ballot" icon={<BallotIcon />} />
                 <ListItemLink to="/login" primary="Login" />
                 <ListItemLink to="/signup" primary="Sign Up" />
                 <Button onClick={logout}>Logout</Button>
             </List>
             <Divider />
-            <List>
-                <ListItemLink to="#" primary="Settings" icon={<SettingsIcon />} />
-            </List>
         </Drawer>
     );
 }
