@@ -11,7 +11,6 @@ import Divider from "@material-ui/core/Divider";
 import Container from "@material-ui/core/Container";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Fade from "@material-ui/core/Fade";
-import Slide from "@material-ui/core/Slide";
 import format from "date-fns/format";
 import parseJSON from "date-fns/parseJSON";
 import distanceInWordsToNow from "date-fns/formatDistanceToNow";
@@ -205,7 +204,6 @@ function ElectionList(props) {
                                         <ElectionButton
                                             id={id}
                                             type={props.type}
-                                            election = {c}
                                         />
                                     </Grid>
                                 </Grid>
@@ -238,7 +236,7 @@ function ElectionButton(props) {
 
     if (props.type === "ongoing") {
         text = "Cast Ballot";
-        link = `elections/${props.id}`;
+        link = `elections/${props.id}/ballot`;
     }
     else if (props.type === "upcoming") {
         text = "Preview Ballot";
@@ -254,13 +252,7 @@ function ElectionButton(props) {
             variant="contained"
             color="primary"
             component={Link}
-            to={{
-                pathname: link,
-                state : {
-                    election: props.election,
-                    id: props.id
-                }
-            }}
+            to={link}
             disabled={disabled}
         >
             {text}
