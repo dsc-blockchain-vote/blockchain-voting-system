@@ -36,7 +36,7 @@ export default function Profile(props) {
             setType(response.data.accountType)
         })
         .catch(error => {
-            console.log(error);
+            alert("Sorry you have to login first to see your account details!");
           })
     }, []);
 
