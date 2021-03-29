@@ -12,32 +12,65 @@ import {
   ValueAxis
 } from '@devexpress/dx-react-chart-material-ui';
 import { EventTracker, Animation } from '@devexpress/dx-react-chart';
+import axios from 'axios';
+import { CircularProgress } from '@material-ui/core';
+import { Redirect } from 'react-router';
 
 const data = [
-    { candidate: "Candidate 1", votes: 1234 },
-    { candidate: "Candidate 2", votes: 643 },
-    { candidate: "Candidate 3", votes: 636 },
+    { name: "Candidate 1", votes: 1234 },
+    { name: "Candidate 2", votes: 643 },
+    { name: "Candidate 3", votes: 636 },
     { candidate: "Candidate 4", votes: 320 },
   ];
 
 class ResultsView extends Component {
     state = {  }
+    constructor(props) {
+        super(props);
+        this.state = {data: {}, loading: true};
+    }
+
+    componentDidMount() {
+        this.getData();
+    }
+
+    getData() {
+        axios
+            .get(`http://localhost:5000/api/election/${this.props.match.params.id}/result`, {
+                withCredentials: true,
+            })
+            .then((response) => {
+                console.log(response);
+                this.setState({data: response.data, loading: false});
+            })
+            .catch((error) => {
+                console.log(error);
+                this.setState({loading: false});
+            });
+    }
+
     render() { 
+        if (this.state.loading) {
+            return (<CircularProgress/>);
+        }
+        if (this.state.data === {}) {
+            return (<Redirect to="/elections"/>);
+        }
         return (
             <Container maxWidth="md">
                 <Paper>
-                    <Chart data={data}>
-                        <PieSeries valueField="votes" argumentField="candidate" />
+                    <Chart data={this.state.data.results}>
+                        <PieSeries valueField="votes" argumentField="name" />
                         <Legend/>
                         <Title text="Election Title"/>
                         <EventTracker/>
                         <Tooltip/>
                         <Animation/>
                     </Chart>
-                    <Chart data={data} rotated>
+                    <Chart data={this.state.data.results} rotated>
                         <ArgumentAxis/>
                         <ValueAxis/>
-                        <BarSeries valueField="votes" argumentField="candidate" />
+                        <BarSeries valueField="votes" argumentField="name" />
                         <Title text="Election Title"/>
                         <EventTracker/>
                         <Tooltip/>
