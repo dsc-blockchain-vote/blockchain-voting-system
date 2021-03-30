@@ -4,7 +4,7 @@
 
 &nbsp;
 
-### To solve this problem, we leverage the blockchain techonology which aims provides the necessary transparency and accountability in elections.
+### To solve this problem, we leverage the blockchain techonology which aims to provides the necessary transparency and accountability in elections.
 
 &nbsp;
 
@@ -55,7 +55,9 @@ Note that since the server interacts with a blockchain, certain actions can take
 
 # Connecting to our blockchain network
 
-You can use clients like [Geth](https://geth.ethereum.org/docs/install-and-build/installing-geth) to connect to our blockchain network using:
+Note: This isn't necessary to run our webapp. You can use this to manually verify the blockchain interactions that occur when using the webapp.
+
+You can use Ethereum Clique protocol supporting clients like [Geth](https://geth.ethereum.org/docs/install-and-build/installing-geth) to connect to setup a node that connects to our blockchain network using:
 
 `networkid: 392`  
 Use can use any of the following bootnodes:
