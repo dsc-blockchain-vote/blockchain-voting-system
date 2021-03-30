@@ -119,9 +119,9 @@ class ElectionForm extends Component {
         } else if (name === "voterID") {
             if (!value)
                 this.state.errors.voterID[id] = "Voter ID should not be empty";
-            else if (!/^[0-9\b]+$/.test(value))
-                this.state.errors.voterID[id] =
-                    "Voter ID should only consist of numbers";
+            // else if (!/^[0-9\b]+$/.test(value))
+            //     this.state.errors.voterID[id] =
+            //         "Voter ID should only consist of numbers";
             else if (/^[0-9\b]+$/.test(value))
                 this.state.errors.voterID[id] = "";
         } else if (name === "email") {
