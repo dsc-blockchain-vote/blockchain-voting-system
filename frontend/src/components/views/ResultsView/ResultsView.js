@@ -76,7 +76,7 @@ class ResultsView extends Component {
                             argumentField="candidate"
                         />
                         <Legend />
-                        <Title text="UTMSU Vice President Election" />
+                        <Title text="UTMSU President" />
                         <EventTracker />
                         <Tooltip />
                         <Animation />

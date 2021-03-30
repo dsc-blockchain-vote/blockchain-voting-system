@@ -234,13 +234,26 @@ function ElectionButton(props) {
     let link = "";
     let disabled = false;
 
+    const deploy = () => {
+        axios
+            .put(`http://localhost:5000/api/election/${props.id}/deploy`, {
+                withCredentials: true,
+            })
+            .then((response) => {
+                disabled = true;
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }
+
     if (props.type === "ongoing") {
         text = "Cast Ballot";
         link = `elections/${props.id}/ballot`;
     }
     else if (props.type === "upcoming") {
         text = "Edit";
-        link = `elections/${props.id}/preview`;
+        link = `elections/${props.id}/edit`;
     }
     else if (props.type === "previous") {
         text = "View Results";
@@ -251,8 +264,7 @@ function ElectionButton(props) {
         return (<ButtonGroup fullWidth><Button
             variant="outlined"
             color="primary"
-            component={Link}
-            to={link}
+            onClick={deploy}
             disabled={disabled}
         >
             Deploy
