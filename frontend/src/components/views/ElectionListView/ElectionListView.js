@@ -17,7 +17,7 @@ import distanceInWordsToNow from "date-fns/formatDistanceToNow";
 import isPast from "date-fns/isPast";
 import isFuture from "date-fns/isFuture";
 import { Link } from "react-router-dom";
-import { Button, Grid, Tooltip } from "@material-ui/core";
+import { Button, ButtonGroup, Grid, Tooltip } from "@material-ui/core";
 import axios from "axios";
 
 const useStyles = makeStyles({
@@ -239,12 +239,33 @@ function ElectionButton(props) {
         link = `elections/${props.id}/ballot`;
     }
     else if (props.type === "upcoming") {
-        text = "Preview Ballot";
+        text = "Edit";
         link = `elections/${props.id}/preview`;
     }
     else if (props.type === "previous") {
         text = "View Results";
         link = `elections/${props.id}/results`;
+    }
+
+    if (props.type === "upcoming") {
+        return (<ButtonGroup fullWidth><Button
+            variant="outlined"
+            color="primary"
+            component={Link}
+            to={link}
+            disabled={disabled}
+        >
+            Deploy
+        </Button>
+        <Button
+            variant="contained"
+            color="primary"
+            component={Link}
+            to={link}
+            disabled={disabled}
+        >
+            {text}
+        </Button></ButtonGroup>)
     }
 
     return (
