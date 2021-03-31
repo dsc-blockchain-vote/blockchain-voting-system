@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Paper from "@material-ui/core/Paper";
 import Container from "@material-ui/core/Container";
+import Typography from "@material-ui/core/Typography";
 import {
     Chart,
     PieSeries,
@@ -19,7 +20,7 @@ class ResultsView extends Component {
     state = {};
     constructor(props) {
         super(props);
-        this.state = { data: {}, loading: true, error: false};
+        this.state = { data: {}, loading: true, error: false };
     }
 
     componentDidMount() {
@@ -37,7 +38,10 @@ class ResultsView extends Component {
             .then((response) => {
                 const results = [];
                 for (let c in response.data.results) {
-                    results.push({name: c["name"], votes: parseInt(c["votes"])})
+                    results.push({
+                        name: response.data.results[c]["name"],
+                        votes: parseInt(response.data.results[c]["votes"]),
+                    });
                 }
                 this.setState({ data: results, loading: false, error: false });
             })
@@ -48,7 +52,15 @@ class ResultsView extends Component {
 
     render() {
         if (this.state.error) {
-            return null;
+            return (
+                <Container maxWidth="md">
+                    <Typography variant="h5">Results not available </Typography>
+                    <Typography>
+                        If you believe this is an error, contact your
+                        organization's administrator.
+                    </Typography>
+                </Container>
+            );
         }
         if (this.state.loading) {
             return (
@@ -61,10 +73,7 @@ class ResultsView extends Component {
             <Container maxWidth="md">
                 <Paper>
                     <Chart data={this.state.data}>
-                        <PieSeries
-                            valueField="votes"
-                            argumentField="name"
-                        />
+                        <PieSeries valueField="votes" argumentField="name" />
                         <Legend />
                         <Title text="UTMSU Vice-President" />
                         <EventTracker />
@@ -74,10 +83,7 @@ class ResultsView extends Component {
                     <Chart data={this.state.data} rotated>
                         <ArgumentAxis />
                         <ValueAxis />
-                        <BarSeries
-                            valueField="votes"
-                            argumentField="name"
-                        />
+                        <BarSeries valueField="votes" argumentField="name" />
                         {/* <Title text="UTMSU Vice President Election"/> */}
                         <EventTracker />
                         <Tooltip />
