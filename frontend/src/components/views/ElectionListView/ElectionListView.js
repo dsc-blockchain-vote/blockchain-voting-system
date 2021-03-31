@@ -233,13 +233,16 @@ function ElectionButton(props) {
     let text = "View Election"
     let link = "";
     let disabled = false;
+    let disableDeploy = false;
 
     const deploy = () => {
-        axios
-            .put(`http://localhost:5000/api/election/${props.id}/deploy`, {
-                withCredentials: true,
-            })
+        axios({
+            method: "put",
+            url: `http://localhost:5000/api/election/${props.id}/deploy`,
+            withCredentials: true,
+        })
             .then((response) => {
+                console.log("Deployed election");
                 disabled = true;
             })
             .catch((error) => {
@@ -265,7 +268,7 @@ function ElectionButton(props) {
             variant="outlined"
             color="primary"
             onClick={deploy}
-            disabled={disabled}
+            disabled={disableDeploy}
         >
             Deploy
         </Button>
