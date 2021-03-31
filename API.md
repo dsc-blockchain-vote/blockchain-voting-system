@@ -325,3 +325,103 @@ Also tells whether the voter has voted or not and if they have then whom have th
 
 - `Status code`: 400
   - `Return`: "bad request"
+
+## `GET /api/user/info`
+
+Gets the users name, email, userID, and their account type
+
+### URL parameter
+
+- None
+
+### Request JSON
+
+- EMPTY
+
+### Response
+
+- `Status code`: 200
+
+  - `JSON returned`:  
+    {  
+     &emsp;`name`: user’s name,  
+     &emsp;`email`: user’s email,  
+     &emsp;`userID`: users ID hash,  
+     &emsp;`accountType`: “Organizer” or “voter”,  
+    }
+    - if `voted` is false then `votedFor` field won't exist
+
+- `Status code`: 400
+  - `Return`: "bad request"
+
+
+
+
+
+
+
+## `GET /api/election/{electionID}/results`
+
+Returns an object with the results of the election
+
+### URL parameter
+
+- `electionID`: election ID of the election whose contract has to be updated
+
+### Request JSON
+
+  - EMPTY
+
+### Response
+
+- `Status code`: 200
+  - `Return`: 
+{
+    &emsp;`"totalVotes"`: total number of votes casted,
+    &emsp;`"winner"`: the name of a candidate,
+    &emsp;`"results"`: an array of objects where each object contains the candidates name and vote count
+    &emsp;{
+        &emsp;&emsp;`"name"`: name of the candidate
+        &emsp;&emsp;`"votes"`: the number of votes the candidate has
+    &emsp;}
+}
+  
+
+- `Status code`: 401
+  - `Return`: "Unauthorized"
+
+- `Status code`: 400
+  - `Return`: "bad request"
+
+## `GET /api/election/{electionID}/update`
+
+Updates the election contract
+
+### URL parameter
+
+- `electionID`: election ID of the election whose contract has to be updated
+
+### Request JSON
+
+  - `Request JSON`:  
+    {  
+     &emsp;`candidates`: array of candidates,  
+     &emsp;`endTime`: end time of election in UTC in ISO format,  
+     &emsp;`startTime`: start time of election in UTC is ISO format,  
+     &emsp;`electionName`: name of election,  
+     &emsp;`organizerName`: name of organizer,  
+    }
+
+### Response
+
+- `Status code`: 200
+  - `Return`: 
+  { 
+    &emsp;`electionID`: the elections ID
+  }
+
+- `Status code`: 401
+  - `Return`: "Unauthorized"
+
+- `Status code`: 400
+  - `Return`: "bad request"
