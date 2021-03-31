@@ -29,7 +29,8 @@ $ npm start
 ```
 
 The frontend will be accessible on `localhost:3000`
-Note: Any interaction with blockchain requires some time. Please be patient
+
+Note: For the frontend to work, the local server should also be running. To start the server look at the instructions below. Any interaction with blockchain requires some time. Please be patient
 
 &nbsp;
 
