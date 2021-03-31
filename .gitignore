@@ -1,0 +1,20 @@
+# environment variables
+#.env
+
+# dependencies
+**/node_modules
+**/.pnp
+**/.pnp.js
+
+#keys
+#service-account.json
+
+# testing
+**/coverage
+
+# production
+**/build
+
+# misc
+**/.DS_Store
+**/npm-debug.log*
