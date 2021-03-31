@@ -20,7 +20,7 @@ class ResultsView extends Component {
     state = {};
     constructor(props) {
         super(props);
-        this.state = { data: {}, loading: true, error: false };
+        this.state = { data: {}, title: "", loading: true, error: false };
     }
 
     componentDidMount() {
@@ -43,7 +43,24 @@ class ResultsView extends Component {
                         votes: parseInt(response.data.results[c]["votes"]),
                     });
                 }
-                this.setState({ data: results, loading: false, error: false });
+                this.setState({ data: results });
+                axios
+                    .get(
+                        `http://localhost:5000/api/election/${this.props.match.params.id}`,
+                        {
+                            withCredentials: true,
+                        }
+                    )
+                    .then((response) => {
+                        this.setState({
+                            title: response.data.electionName,
+                            loading: false,
+                            error: false,
+                        });
+                    })
+                    .catch((error) => {
+                        this.setState({ error: true });
+                    });
             })
             .catch((error) => {
                 this.setState({ error: true });
@@ -75,7 +92,7 @@ class ResultsView extends Component {
                     <Chart data={this.state.data}>
                         <PieSeries valueField="votes" argumentField="name" />
                         <Legend />
-                        <Title text="UTMSU Vice-President" />
+                        <Title text={this.state.title} />
                         <EventTracker />
                         <Tooltip />
                         <Animation />
