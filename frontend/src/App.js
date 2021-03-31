@@ -25,7 +25,7 @@ function App() {
     return (
         <div className={classes.root}>
             <CssBaseline />
-            <NavBar title="All elections" />
+            <NavBar title="dVote" />
             <LeftDrawer />
             <main className={classes.content}>
                 <div className={classes.toolbar} />
