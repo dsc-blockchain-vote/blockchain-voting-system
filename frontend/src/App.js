@@ -3,7 +3,7 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import LeftDrawer from "./components/common/LeftDrawer";
 import { makeStyles } from "@material-ui/core/styles";
 import NavBar from "./components/common/NavBar";
-import CreateElectionView from "./components/views/CreateElectionView/CreateElectionView";
+import ElectionFormView from "./components/views/ElectionFormView/ElectionFormView";
 import RouteHandler from "./components/router/RouteHandler";
 
 const useStyles = makeStyles((theme) => ({

@@ -88,6 +88,9 @@ export default function Component() {
                 }));
               });
             })
+            .catch(error => {
+              alert(error.message);
+            })
     }
 }
 
