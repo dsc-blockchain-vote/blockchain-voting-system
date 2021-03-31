@@ -11,6 +11,7 @@ import RadioGroup from "@material-ui/core/RadioGroup";
 import Typography from "@material-ui/core/Typography";
 import React, { Component, useState, useEffect } from "react";
 import axios from "axios";
+import { set } from "date-fns";
 
 export default function BallotView(props) {
 
@@ -20,6 +21,7 @@ export default function BallotView(props) {
     let [candidates, setCandidates] = useState([]);
     let [voted, setVoted] = useState(false);
     let [votedFor, setVotedFor] = useState("");
+    let [num, setNum] = useState(0);
 
     //gets the candidate names for thsi election from the backend and whether this voter has voted 
     // in the election before or not
@@ -36,7 +38,7 @@ export default function BallotView(props) {
             setVotedFor(votedFor);
         })
         .catch(error => {
-            console.log(error);
+            alert(error.message);
           })
     }, []);
 
@@ -45,18 +47,19 @@ export default function BallotView(props) {
     const submitForm = (event, value) => {
         event.preventDefault();
         console.log({id, value})
-        axios.put(`http://localhost:5000/api/election/${id}/vote`, {"candidateID": value}, {withCredentials: true})
+        num = num + 1; 
+        if (num === 1){
+            axios.put(`http://localhost:5000/api/election/${id}/vote`, {"candidateID": value}, {withCredentials: true})
             .then(response => {
                 event.preventDefault();
-                console.log(value);
-                alert(`Voted successfully for Candidate 
-                ${props.location.state.election.candidates[parseInt(votedFor)]} with transaction hash
-                ${response.data.transactionHash}. Take a screenshot of this or save this transaction
-                hash safely somewhere, since you won't be able to view this hash again!`)
+                alert(`Voted successfully for Candidate ${props.location.state.election.candidates[parseInt(value)]} with transaction hash ${response.data["transaction hash"]}. Take a screenshot of this or save this transaction hash safely somewhere, since you won't be able to view this hash again!`)
             })
             .catch(error => {
-              console.log(error);
+              alert(error.message);
             }) 
+        }
+        else
+            alert("Sorry you have already voted, you can't vote again!");
     };
  
     return (
@@ -93,7 +96,6 @@ function BallotList(props) {
 
     //updates the candidate chosen by the voter
     const onChange = (e) => {
-        console.log(e.target.value)
         setValue(e.target.value );
         setDisabled(false);
     }
