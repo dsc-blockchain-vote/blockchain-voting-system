@@ -14,31 +14,19 @@ import {
 import { EventTracker, Animation } from "@devexpress/dx-react-chart";
 import axios from "axios";
 import { CircularProgress } from "@material-ui/core";
-import { Redirect } from "react-router";
-
-const data = [
-    { candidate: "Shubh Bapna", votes: 4 },
-    { candidate: "Henry Lin", votes: 3 },
-    { candidate: "Chloe Lin", votes: 2 },
-    { candidate: "Shivangi Pathak", votes: 1 },
-];
-
-async function stall(stallTime = 3000) {
-    await new Promise((resolve) => setTimeout(resolve, stallTime));
-}
 
 class ResultsView extends Component {
     state = {};
     constructor(props) {
         super(props);
-        this.state = { data: data, loading: true };
+        this.state = { data: {}, loading: true, error: false};
     }
 
     componentDidMount() {
         this.getData();
     }
 
-    async getData() {
+    getData() {
         axios
             .get(
                 `http://localhost:5000/api/election/${this.props.match.params.id}/result`,
@@ -46,17 +34,22 @@ class ResultsView extends Component {
                     withCredentials: true,
                 }
             )
-            .then(async (response) => {
-                console.log(response);
-                this.setState({ loading: false });
+            .then((response) => {
+                const results = [];
+                for (let c in response.data.results) {
+                    results.push({name: c["name"], votes: parseInt(c["votes"])})
+                }
+                this.setState({ data: results, loading: false, error: false });
             })
             .catch((error) => {
-                console.log(error);
-                this.setState({ loading: false });
+                this.setState({ error: true });
             });
     }
 
     render() {
+        if (this.state.error) {
+            return null;
+        }
         if (this.state.loading) {
             return (
                 <Container maxWidth="md">
@@ -64,19 +57,16 @@ class ResultsView extends Component {
                 </Container>
             );
         }
-        if (this.state.data === {}) {
-            return <Redirect to="/elections" />;
-        }
         return (
             <Container maxWidth="md">
                 <Paper>
                     <Chart data={this.state.data}>
                         <PieSeries
                             valueField="votes"
-                            argumentField="candidate"
+                            argumentField="name"
                         />
                         <Legend />
-                        <Title text="UTMSU President" />
+                        <Title text="UTMSU Vice-President" />
                         <EventTracker />
                         <Tooltip />
                         <Animation />
@@ -86,7 +76,7 @@ class ResultsView extends Component {
                         <ValueAxis />
                         <BarSeries
                             valueField="votes"
-                            argumentField="candidate"
+                            argumentField="name"
                         />
                         {/* <Title text="UTMSU Vice President Election"/> */}
                         <EventTracker />
