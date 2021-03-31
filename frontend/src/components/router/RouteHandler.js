@@ -19,7 +19,7 @@ export default function RouteHandler() {
             <Route path="/profile" component={Profile}/>
             <Route exact path="/elections" component = {ElectionListView}/>
             <Route exact path="/elections/create" component={CreateElectionView}/>
-            <Route exact path="/elections/:id" component={BallotView}/>
+            <Route exact path="/elections/:id/ballot" component={BallotView}/>
             <Route exact path="/elections/:id/edit" component = {EditElectionView}/>
             <Route exact path="/elections/:id/results" component = {ResultsView}/>
         </Switch>

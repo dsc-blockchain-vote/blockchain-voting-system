@@ -38,7 +38,7 @@ app.use(cookieParser());
 // cors
 const cors = require("cors");
 if (env !== "production") {
-  app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
+  app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 }
 
 //helper functions
@@ -135,6 +135,7 @@ const validateVoters = async (
 //convert human readable date and time to epoch time
 const humanToEpoch = (date) => {
   let dateObj = new Date(date);
+  dateObj.setMilliseconds(0);
   return dateObj.getTime() / 1000;
 };
 

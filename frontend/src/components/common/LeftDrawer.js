@@ -75,7 +75,8 @@ export default function LeftDrawer() {
             <Divider />
             <List>
                 <ListItemLink to="/elections" primary="Elections List" icon={<AllInboxIcon />} />
-                <ListItemLink to="/create" primary="Create Election" icon={<CreateIcon />} />
+                <ListItemLink to="/elections/create" primary="Create Election" icon={<CreateIcon />} />
+                <Divider />
                 <ListItemLink to="/login" primary="Login" />
                 <ListItemLink to="/signup" primary="Sign Up" />
                 <Button onClick={logout}>Logout</Button>
