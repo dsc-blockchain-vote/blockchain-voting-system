@@ -29,6 +29,7 @@ $ npm start
 ```
 
 The frontend will be accessible on `localhost:3000`
+Note: Any interaction with blockchain requires some time. Please be patient
 
 &nbsp;
 
@@ -37,10 +38,10 @@ The frontend will be accessible on `localhost:3000`
 Make sure you are in the `blockchain-voting-system` directory and run the following command
 
 ```console
-$ npm install
+$ cd backend && npm install
 ```
 
-After all the project dependencies have been installed run the following
+After all the project dependencies have been installed run the following in the backend directory
 
 ```console
 $ npm start
@@ -50,6 +51,8 @@ The local server is listening on `localhost:5000`
 
 To run just the server, refer to `API.md` on how to use the APIs using Postman or cURL  
 Note that since the server interacts with a blockchain, certain actions can take more time to respond since they need to be mined on the blockchain first.
+
+Note: Any interaction with blockchain requires some time. Please be patient
 
 &nbsp;
 
