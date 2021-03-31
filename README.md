@@ -61,7 +61,7 @@ Note: Any interaction with blockchain requires some time. Please be patient
 
 Note: This isn't necessary to run our webapp. You can use this to manually verify the blockchain interactions that occur when using the webapp.
 
-You can use Ethereum Clique protocol supporting clients like [Geth](https://geth.ethereum.org/docs/install-and-build/installing-geth) to connect to setup a node that connects to our blockchain network using:
+You can use Ethereum Clique protocol supporting clients like [Geth](https://geth.ethereum.org/docs/install-and-build/installing-geth) to setup a node that connects to our blockchain network using:
 
 `networkid: 392`  
 Use can use any of the following bootnodes:
