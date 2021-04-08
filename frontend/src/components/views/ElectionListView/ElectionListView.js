@@ -15,7 +15,7 @@ import Fade from "@material-ui/core/Fade";
 import format from "date-fns/format";
 import parseJSON from "date-fns/parseJSON";
 import distanceInWordsToNow from "date-fns/formatDistanceToNow";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button, ButtonGroup, Grid, Tooltip } from "@material-ui/core";
 import axios from "axios";
 
@@ -60,11 +60,11 @@ function parseElections(data) {
 
 export default function ElectionListView(props) {
   const classes = useStyles();
-  // @ts-ignore
-  let { tab } = useParams();
-  if (!tab) tab = 0;
-  tab = parseInt(tab);
-  if (tab > 2) tab = 0;
+  const search = useLocation().search;
+  let getTab = new URLSearchParams(search).get("tab");
+  let tab = 0;
+  if (getTab !== null) tab = parseInt(getTab);
+  if (tab > 2 || tab < 0) tab = 0;
   const [value, setValue] = React.useState(tab);
 
   const handleChange = (event, newValue) => {
@@ -249,13 +249,13 @@ function ElectionButton(props) {
 
   if (props.type === "ongoing") {
     text = "Cast Ballot";
-    link = `elections/${props.id}/ballot`;
+    link = `/elections/${props.id}/ballot`;
   } else if (props.type === "upcoming") {
     text = "Edit";
-    link = `elections/${props.id}/edit`;
+    link = `/elections/${props.id}/edit`;
   } else if (props.type === "previous") {
     text = "View Results";
-    link = `elections/${props.id}/results`;
+    link = `/elections/${props.id}/results`;
   }
 
   if (props.type === "upcoming") {
@@ -278,7 +278,7 @@ function ElectionButton(props) {
             variant="contained"
             color="primary"
             component={Link}
-            to={link}
+            to={{ pathname: link }}
             disabled={disabled}
           >
             {text}

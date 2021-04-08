@@ -377,6 +377,7 @@ app.put("/api/election/:electionID/deploy", verifyUser, async (req, res) => {
   const { userID, isOrganizer } = req.body;
   try {
     const electionID = req.params.electionID;
+
     if (!isOrganizer) {
       res.status(401).send("Unauthorized");
       return;
@@ -428,8 +429,11 @@ app.put("/api/election/:electionID/deploy", verifyUser, async (req, res) => {
       address: deployTx.options.address,
     });
 
+    const validVoter = electionData.validVoters.map((v) => {
+      return v.voterID;
+    });
     let invalidVoterIDs = await validateVoters(
-      electionData.validVoters,
+      validVoter,
       deployTx.options.address,
       organizerAccount
     );
