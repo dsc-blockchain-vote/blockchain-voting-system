@@ -8,7 +8,6 @@ import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import parseISO from "date-fns/parseISO";
 import axios from "axios";
-import Fade from "@material-ui/core/Fade/Fade";
 import { CircularProgress } from "@material-ui/core";
 
 const emailRegex = RegExp(
@@ -27,6 +26,7 @@ class ElectionForm extends Component {
       end: new Date(),
       candidates: [],
       voters: [],
+      loading: false,
       errors: {
         title: "",
         candidateName: [],
@@ -187,14 +187,12 @@ class ElectionForm extends Component {
         startTime: this.state.start.toISOString(),
         endTime: this.state.end.toISOString(),
         candidates: [],
-        validVoters: [],
+        validVoters: this.state.voters,
       };
       for (let c in this.state.candidates) {
         election.candidates.push(this.state.candidates[c].name);
       }
-      for (let v in this.state.voters) {
-        election.validVoters.push(this.state.voters[v].voterID);
-      }
+      this.setState({ loading: true });
       axios({
         method: "post",
         url: "http://localhost:5000/api/election/create",
@@ -202,10 +200,12 @@ class ElectionForm extends Component {
         withCredentials: true,
       })
         .then((response) => {
+          this.setState({ loading: false });
           alert("Election Saved successfully");
-          window.location.href = "/elections/1";
+          window.location.href = "/elections/?tab=1";
         })
         .catch((error) => {
+          this.setState({ loading: false });
           console.log(error);
         });
     } else alert("Check the input fields again for any invalid or empty entry");
@@ -213,7 +213,6 @@ class ElectionForm extends Component {
   // Edit an election
   // TODO: consider either merging editElection and createElection or splitting editing and creating election forms into two completely different components
   editElection = () => {
-    console.log(this.state.errors.candidateName);
     if (
       this.state.errors.title === "" &&
       this.checkForErrors("candidate") === true &&
@@ -232,14 +231,12 @@ class ElectionForm extends Component {
         startTime: this.state.start.toISOString(),
         endTime: this.state.end.toISOString(),
         candidates: [],
-        validVoters: [],
+        validVoters: this.state.voters,
       };
       for (let c in this.state.candidates) {
         election.candidates.push(this.state.candidates[c].name);
       }
-      for (let v in this.state.voters) {
-        election.validVoters.push(this.state.voters[v].voterID);
-      }
+      this.setState({ loading: true });
       axios({
         method: "put",
         url: `http://localhost:5000/api/election/${this.props.id}/update`,
@@ -247,9 +244,12 @@ class ElectionForm extends Component {
         withCredentials: true,
       })
         .then((response) => {
-          console.log("Saved election settings");
+          this.setState({ loading: false });
+          alert("Election Saved successfully");
+          window.location.href = "/elections/?tab=1";
         })
         .catch((error) => {
+          this.setState({ loading: false });
           console.log(error);
         });
     } else alert("Check the input fields again for any invalid or empty entry");
@@ -339,7 +339,7 @@ class ElectionForm extends Component {
             for (let i = 0; i < response.data["validVoters"].length; i++) {
               importVoters.push({
                 id: i,
-                name: response.data["validVoters"][i],
+                ...response.data["validVoters"][i],
               });
             }
           }
@@ -375,55 +375,55 @@ class ElectionForm extends Component {
       text = "Save";
     }
     return (
-      <Fade in={!this.loading}>
-        <Container maxWidth="lg">
-          <Grid container justify="flex-end" spacing={3}>
-            <Grid item xs={12}>
-              <Settings
-                {...{
-                  startChange: this.handleStartChange,
-                  endChange: this.handleEndChange,
-                  inputChange: this.handleInputChange,
-                  title: this.state.title,
-                  start: this.state.start,
-                  end: this.state.end,
-                  errors: this.state.errors,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Candidates
-                {...{
-                  addOrDelete: this.addOrDelete,
-                  inputChange: this.handleInputChange,
-                  candidates: this.state.candidates,
-                  errors: this.state.errors,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <VotersList
-                {...{
-                  addOrDelete: this.addOrDelete,
-                  inputChange: this.handleInputChange,
-                  voters: this.state.voters,
-                  errors: this.state.errors,
-                }}
-              />
-            </Grid>
-            <Grid item>
-              <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                onClick={onClick}
-              >
-                {text}
-              </Button>
-            </Grid>
+      <Container maxWidth="lg">
+        <Grid container justify="flex-end" spacing={3}>
+          <Grid item xs={12}>
+            <Settings
+              {...{
+                startChange: this.handleStartChange,
+                endChange: this.handleEndChange,
+                inputChange: this.handleInputChange,
+                title: this.state.title,
+                start: this.state.start,
+                end: this.state.end,
+                errors: this.state.errors,
+              }}
+            />
           </Grid>
-        </Container>
-      </Fade>
+          <Grid item xs={12}>
+            <Candidates
+              {...{
+                addOrDelete: this.addOrDelete,
+                inputChange: this.handleInputChange,
+                candidates: this.state.candidates,
+                errors: this.state.errors,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <VotersList
+              {...{
+                addOrDelete: this.addOrDelete,
+                inputChange: this.handleInputChange,
+                voters: this.state.voters,
+                errors: this.state.errors,
+              }}
+            />
+          </Grid>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              onClick={onClick}
+              disabled={this.state.loading}
+            >
+              {text}
+            </Button>
+            {this.state.loading && <CircularProgress size={64} />}
+          </Grid>
+        </Grid>
+      </Container>
     );
   }
 }
