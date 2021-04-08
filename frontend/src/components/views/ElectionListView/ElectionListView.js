@@ -1,6 +1,7 @@
 import React, { Component, useEffect } from "react";
 import Paper from "@material-ui/core/Paper";
 import { makeStyles } from "@material-ui/core/styles";
+import { grey } from "@material-ui/core/colors";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import TimerIcon from "@material-ui/icons/Timer";
@@ -14,8 +15,6 @@ import Fade from "@material-ui/core/Fade";
 import format from "date-fns/format";
 import parseJSON from "date-fns/parseJSON";
 import distanceInWordsToNow from "date-fns/formatDistanceToNow";
-import isPast from "date-fns/isPast";
-import isFuture from "date-fns/isFuture";
 import { Link } from "react-router-dom";
 import { Button, ButtonGroup, Grid, Tooltip } from "@material-ui/core";
 import axios from "axios";
@@ -37,6 +36,12 @@ const useStyles = makeStyles({
     marginTop: 10,
     marginBottom: 20,
   },
+  buttonProgress: {
+    position: "relative",
+    color: grey[900],
+    marginTop: 0,
+    marginLeft: -36,
+  },
 });
 
 // Parse election data from a JSON response
@@ -56,7 +61,11 @@ function parseElections(data) {
 
 export default function ElectionListView(props) {
   const classes = useStyles();
-  const [value, setValue] = React.useState(0);
+  let defaultTab = props.match.params.tab
+    ? parseInt(props.match.params.tab)
+    : 0;
+  if (defaultTab > 2) defaultTab = 0;
+  const [value, setValue] = React.useState(defaultTab);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -218,18 +227,20 @@ function ElectionList(props) {
 function ElectionButton(props) {
   let text = "View Election";
   let link = "";
-  let disabled = false;
-  let disableDeploy = false;
-
+  const classes = useStyles();
+  const [disabled, setDisabled] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
   const deploy = () => {
+    if (!loading) setLoading(true);
     axios({
       method: "put",
       url: `http://localhost:5000/api/election/${props.id}/deploy`,
       withCredentials: true,
     })
       .then((response) => {
-        console.log("Deployed election");
-        disabled = true;
+        setLoading(false);
+        alert("Deployed election");
+        setDisabled(true);
       })
       .catch((error) => {
         console.log(error);
@@ -249,25 +260,34 @@ function ElectionButton(props) {
 
   if (props.type === "upcoming") {
     return (
-      <ButtonGroup fullWidth>
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={deploy}
-          disabled={disableDeploy}
+      <div>
+        <ButtonGroup
+          fullWidth
+          size="large"
+          style={loading ? { filter: "blur(2px)" } : {}}
         >
-          Deploy
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          component={Link}
-          to={link}
-          disabled={disabled}
-        >
-          {text}
-        </Button>
-      </ButtonGroup>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={deploy}
+            disabled={disabled}
+          >
+            Deploy
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            component={Link}
+            to={link}
+            disabled={disabled}
+          >
+            {text}
+          </Button>
+        </ButtonGroup>
+        {loading && (
+          <CircularProgress size={32} className={classes.buttonProgress} />
+        )}
+      </div>
     );
   }
 
