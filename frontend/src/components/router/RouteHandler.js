@@ -23,7 +23,7 @@ export default function RouteHandler(props) {
             <Route exact path="/elections" render={() => 
                             (<ElectionListView setLoggedIn={props.setLoggedIn} loggedIn={props.loggedIn}/>)}/>
             <Route exact path="/elections/create" component={CreateElectionView}/>
-            <Route exact path="/elections/:id" component={BallotView}/>
+            <Route exact path="/elections/:id/ballot" component={BallotView}/>
             <Route exact path="/elections/:id/edit" component = {EditElectionView}/>
             <Route exact path="/elections/:id/results" component = {ResultsView}/>
         </Switch>

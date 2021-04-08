@@ -1,33 +1,26 @@
-import React, { Component } from 'react';
-import Paper from '@material-ui/core/Paper';
-import Container from '@material-ui/core/Container';
+import React, { Component } from "react";
+import Paper from "@material-ui/core/Paper";
+import Container from "@material-ui/core/Container";
+import Typography from "@material-ui/core/Typography";
 import {
-  Chart,
-  PieSeries,
-  BarSeries,
-  Legend,
-  Title,
-  Tooltip,
-  ArgumentAxis,
-  ValueAxis
-} from '@devexpress/dx-react-chart-material-ui';
-import { EventTracker, Animation } from '@devexpress/dx-react-chart';
-import axios from 'axios';
-import { CircularProgress } from '@material-ui/core';
-import { Redirect } from 'react-router';
-
-const data = [
-    { name: "Candidate 1", votes: 1234 },
-    { name: "Candidate 2", votes: 643 },
-    { name: "Candidate 3", votes: 636 },
-    { candidate: "Candidate 4", votes: 320 },
-  ];
+    Chart,
+    PieSeries,
+    BarSeries,
+    Legend,
+    Title,
+    Tooltip,
+    ArgumentAxis,
+    ValueAxis,
+} from "@devexpress/dx-react-chart-material-ui";
+import { EventTracker, Animation } from "@devexpress/dx-react-chart";
+import axios from "axios";
+import { CircularProgress } from "@material-ui/core";
 
 class ResultsView extends Component {
-    state = {  }
+    state = {};
     constructor(props) {
         super(props);
-        this.state = {data: {}, loading: true};
+        this.state = { data: {}, title: "", loading: true, error: false };
     }
 
     componentDidMount() {
@@ -36,50 +29,87 @@ class ResultsView extends Component {
 
     getData() {
         axios
-            .get(`http://localhost:5000/api/election/${this.props.match.params.id}/result`, {
-                withCredentials: true,
-            })
+            .get(
+                `http://localhost:5000/api/election/${this.props.match.params.id}/result`,
+                {
+                    withCredentials: true,
+                }
+            )
             .then((response) => {
-                console.log(response);
-                this.setState({data: response.data, loading: false});
+                const results = [];
+                for (let c in response.data.results) {
+                    results.push({
+                        name: response.data.results[c]["name"],
+                        votes: parseInt(response.data.results[c]["votes"]),
+                    });
+                }
+                this.setState({ data: results });
+                axios
+                    .get(
+                        `http://localhost:5000/api/election/${this.props.match.params.id}`,
+                        {
+                            withCredentials: true,
+                        }
+                    )
+                    .then((response) => {
+                        this.setState({
+                            title: response.data.electionName,
+                            loading: false,
+                            error: false,
+                        });
+                    })
+                    .catch((error) => {
+                        this.setState({ error: true });
+                    });
             })
             .catch((error) => {
-                console.log(error);
-                this.setState({loading: false});
+                this.setState({ error: true });
             });
     }
 
-    render() { 
-        if (this.state.loading) {
-            return (<CircularProgress/>);
+    render() {
+        if (this.state.error) {
+            return (
+                <Container maxWidth="md">
+                    <Typography variant="h5">Results not available </Typography>
+                    <Typography>
+                        If you believe this is an error, contact your
+                        organization's administrator.
+                    </Typography>
+                </Container>
+            );
         }
-        if (this.state.data === {}) {
-            return (<Redirect to="/elections"/>);
+        if (this.state.loading) {
+            return (
+                <Container maxWidth="md">
+                    <CircularProgress />
+                </Container>
+            );
         }
         return (
             <Container maxWidth="md">
                 <Paper>
-                    <Chart data={this.state.data.results}>
+                    <Chart data={this.state.data}>
                         <PieSeries valueField="votes" argumentField="name" />
-                        <Legend/>
-                        <Title text="Election Title"/>
-                        <EventTracker/>
-                        <Tooltip/>
-                        <Animation/>
+                        <Legend />
+                        <Title text={this.state.title} />
+                        <EventTracker />
+                        <Tooltip />
+                        <Animation />
                     </Chart>
-                    <Chart data={this.state.data.results} rotated>
-                        <ArgumentAxis/>
-                        <ValueAxis/>
+                    <Chart data={this.state.data} rotated>
+                        <ArgumentAxis />
+                        <ValueAxis />
                         <BarSeries valueField="votes" argumentField="name" />
-                        <Title text="Election Title"/>
-                        <EventTracker/>
-                        <Tooltip/>
-                        <Animation/>
+                        {/* <Title text="UTMSU Vice President Election"/> */}
+                        <EventTracker />
+                        <Tooltip />
+                        <Animation />
                     </Chart>
                 </Paper>
             </Container>
         );
     }
 }
- 
+
 export default ResultsView;

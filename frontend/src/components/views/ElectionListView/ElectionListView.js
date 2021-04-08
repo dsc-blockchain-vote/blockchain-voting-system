@@ -95,7 +95,7 @@ export default function ElectionListView(props) {
                             Concluded elections
                         </Typography>
                         <Divider className={classes.divider} />
-                        <ElectionList type={"previous"} loggedIn={props.loggedIn} setLoggedIn = {props.setLoggedIn}/>
+                        <ElectionList type={"previous"} loggedIn={props.loggedIn}/>
                     </TabPanel>
                 </Container>
             </Fade>
