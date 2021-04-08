@@ -15,7 +15,7 @@ import Fade from "@material-ui/core/Fade";
 import format from "date-fns/format";
 import parseJSON from "date-fns/parseJSON";
 import distanceInWordsToNow from "date-fns/formatDistanceToNow";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Button, ButtonGroup, Grid, Tooltip } from "@material-ui/core";
 import axios from "axios";
 
@@ -43,7 +43,6 @@ const useStyles = makeStyles({
     marginLeft: -36,
   },
 });
-
 // Parse election data from a JSON response
 function parseElections(data) {
   let result = {};
@@ -61,11 +60,12 @@ function parseElections(data) {
 
 export default function ElectionListView(props) {
   const classes = useStyles();
-  let defaultTab = props.match.params.tab
-    ? parseInt(props.match.params.tab)
-    : 0;
-  if (defaultTab > 2) defaultTab = 0;
-  const [value, setValue] = React.useState(defaultTab);
+  // @ts-ignore
+  let { tab } = useParams();
+  if (!tab) tab = 0;
+  tab = parseInt(tab);
+  if (tab > 2) tab = 0;
+  const [value, setValue] = React.useState(tab);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
