@@ -32,7 +32,7 @@ const emailRegex = RegExp(
 );
 
 //function to display the input textbox for the election title and for picking the start and end dates 
-export default function Component() {
+export default function Login(props) {
 
   const classes = useStyles();
 
@@ -75,12 +75,14 @@ export default function Component() {
         firebase
             .auth()
             .signInWithEmailAndPassword(email, password)
-            .then(({ user }) => {
-              user.getIdToken().then(console.log)
+            .then(({ user }) => { 
               return user.getIdToken().then((idToken) => {
                 return (axios.post('http://localhost:5000/api/login', {"idToken":idToken}, {withCredentials: true})
                 .then(response => {
                   console.log('Logged in Succesfully!');
+                  //console.log(props.setLogin) 
+                  props.setLoggedIn(true);
+                  // console.log(props.loggedIn)
                   window.location.href = '/elections'
                 })
                 .catch(error => {
@@ -91,8 +93,8 @@ export default function Component() {
             .catch(error => {
               alert(error.message);
             })
+        }
     }
-}
 
         return (
           <Paper elevation={10} className={classes.paperStyle}>

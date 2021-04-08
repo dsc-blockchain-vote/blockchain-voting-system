@@ -87,7 +87,6 @@ export default function Signup() {
             let data = {name, email, password, check}; 
             axios.post('http://localhost:5000/api/register', data)
             .then(response => {
-              alert('Signed up Succesfully!');
               window.location.href = '/elections'
             })
             .catch(error => {

@@ -83,19 +83,19 @@ export default function ElectionListView(props) {
                     <TabPanel value={value} index={0}>
                         <Typography variant="h4">Current elections</Typography>
                         <Divider className={classes.divider} />
-                        <ElectionList type={"ongoing"} />
+                        <ElectionList type={"ongoing"} loggedIn={props.loggedIn} setLoggedIn = {props.setLoggedIn}/>
                     </TabPanel>
                     <TabPanel value={value} index={1}>
                         <Typography variant="h4">Upcoming elections</Typography>
                         <Divider className={classes.divider} />
-                        <ElectionList type={"upcoming"} />
+                        <ElectionList type={"upcoming"} loggedIn={props.loggedIn} setLoggedIn = {props.setLoggedIn}/>
                     </TabPanel>
                     <TabPanel value={value} index={2}>
                         <Typography variant="h4">
                             Concluded elections
                         </Typography>
                         <Divider className={classes.divider} />
-                        <ElectionList type={"previous"} />
+                        <ElectionList type={"previous"} loggedIn={props.loggedIn} setLoggedIn = {props.setLoggedIn}/>
                     </TabPanel>
                 </Container>
             </Fade>
@@ -131,6 +131,8 @@ function ElectionList(props) {
 
     // get elections for this user
     useEffect(() => {
+        props.setLoggedIn(true)
+        console.log(props.loggedIn)
         setLoading(true);
         const result = axios
             .get("http://localhost:5000/api/election", {
@@ -204,6 +206,7 @@ function ElectionList(props) {
                                         <ElectionButton
                                             id={id}
                                             type={props.type}
+                                            election = {c}
                                         />
                                     </Grid>
                                 </Grid>
@@ -236,7 +239,7 @@ function ElectionButton(props) {
 
     if (props.type === "ongoing") {
         text = "Cast Ballot";
-        link = `elections/${props.id}/ballot`;
+        link = `elections/${props.id}`;
     }
     else if (props.type === "upcoming") {
         text = "Preview Ballot";
@@ -252,7 +255,13 @@ function ElectionButton(props) {
             variant="contained"
             color="primary"
             component={Link}
-            to={link}
+            to={{
+                pathname: link,
+                state : {
+                    election: props.election,
+                    id: props.id
+                }
+            }}
             disabled={disabled}
         >
             {text}

@@ -23,7 +23,7 @@ export default function BallotView(props) {
     let [votedFor, setVotedFor] = useState("");
     let [num, setNum] = useState(0);
 
-    //gets the candidate names for thsi election from the backend and whether this voter has voted 
+    //gets the candidate names for this election from the backend and whether this voter has voted 
     // in the election before or not
     useEffect(() => {
         candidates = props.location.state.election.candidates.map((c, i) => {

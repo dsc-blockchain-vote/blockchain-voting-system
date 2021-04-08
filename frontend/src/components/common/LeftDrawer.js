@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
 import List from "@material-ui/core/List";
@@ -41,15 +41,15 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function LeftDrawer() {
+export default function LeftDrawer(props) {
     const classes = useStyles();
-
-
+ 
     //clears the session cookie to logout the current user
     const logout = () => {
         axios.get('http://localhost:5000/api/logout', {withCredentials: true})
         .then(response => {
           console.log('Logged out Succesfully!');
+          props.setLoggedIn(false);
           window.location.assign("/login");
         })
         .catch(error => {
@@ -57,7 +57,12 @@ export default function LeftDrawer() {
         })
     }
 
-    return (
+    useEffect(() => {
+      // console.log(props.loggedIn)
+  }, []);
+
+    if (props.loggedIn === true){
+      return (
         <Drawer
             className={classes.drawer}
             variant="permanent"
@@ -68,21 +73,48 @@ export default function LeftDrawer() {
         >
             {/* TODO: align logo in toolbar to navbar */}
             <div className={classes.toolbar} />
-            <IconButton component={Link} to="/profile">
+            <IconButton component={Link} to={{
+                pathname: "/profile",
+                state : {setUser: useEffect}
+              }}>
                   <AccountCircleIcon fontSize="large"/>
             </IconButton>
 
             <Divider />
             <List>
                 <ListItemLink to="/elections" primary="Elections List" icon={<AllInboxIcon />} />
-                <ListItemLink to="/create" primary="Create Election" icon={<CreateIcon />} />
-                <ListItemLink to="/login" primary="Login" />
-                <ListItemLink to="/signup" primary="Sign Up" />
+                <ListItemLink to="elections/create" primary="Create Election" icon={<CreateIcon />} />
                 <Button onClick={logout}>Logout</Button>
             </List>
             <Divider />
         </Drawer>
-    );
+      );
+    }
+  else {
+    return (
+      <Drawer
+          className={classes.drawer}
+          variant="permanent"
+          classes={{
+              paper: classes.drawerPaper,
+          }}
+          anchor="left"
+      >
+          {/* TODO: align logo in toolbar to navbar */}
+          <div className={classes.toolbar} />
+          <Divider />
+          <List>
+              <Button component={Link} to={{
+                pathname: "/login",
+                // state : {setLogin: props.setLogin}
+              }}>Login</Button>
+              <ListItemLink to="/signup" primary="Sign Up" />
+              <Button onClick={logout}>Logout</Button>
+          </List>
+          <Divider />
+      </Drawer>
+  );
+  }
 }
 
 function ListItemLink(props) {
