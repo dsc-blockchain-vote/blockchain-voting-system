@@ -95,7 +95,7 @@ export default function ElectionListView(props) {
                             Concluded elections
                         </Typography>
                         <Divider className={classes.divider} />
-                        <ElectionList type={"previous"} loggedIn={props.loggedIn}/>
+                        <ElectionList type={"previous"} loggedIn={props.loggedIn} setLoggedIn = {props.setLoggedIn}/>
                     </TabPanel>
                 </Container>
             </Fade>
@@ -239,7 +239,7 @@ function ElectionButton(props) {
 
     if (props.type === "ongoing") {
         text = "Cast Ballot";
-        link = `elections/${props.id}`;
+        link = `elections/${props.id}/ballot`;
     }
     else if (props.type === "upcoming") {
         text = "Preview Ballot";

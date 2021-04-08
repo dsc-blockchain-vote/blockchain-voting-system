@@ -18,7 +18,8 @@ export default function RouteHandler(props) {
             <Route path="/ballot" component={BallotView}/>
             <Route path="/login" render={() => 
                             (<Login setLoggedIn={props.setLoggedIn} loggedIn={props.loggedIn}/>)}/>
-            <Route path="/signup" component={Signup}/>
+            <Route path="/signup" render={() => 
+                            (<Signup setLoggedIn={props.setLoggedIn} loggedIn={props.loggedIn}/>)}/>
             <Route path="/profile" component={Profile}/>
             <Route exact path="/elections" render={() => 
                             (<ElectionListView setLoggedIn={props.setLoggedIn} loggedIn={props.loggedIn}/>)}/>

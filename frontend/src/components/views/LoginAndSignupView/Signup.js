@@ -32,7 +32,7 @@ const emailRegex = RegExp(
 );
 
 //function to display the input textbox for the election title and for picking the start and end dates 
-export default function Signup() {
+export default function Signup(props) {
 
   const classes = useStyles();
 
@@ -87,6 +87,7 @@ export default function Signup() {
             let data = {name, email, password, check}; 
             axios.post('http://localhost:5000/api/register', data)
             .then(response => {
+              props.setLoggedIn(true);
               window.location.href = '/elections'
             })
             .catch(error => {
