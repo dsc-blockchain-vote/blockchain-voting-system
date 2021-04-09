@@ -97,7 +97,6 @@ export default function Login(props) {
                 console.log("Logged in Succesfully!");
                 props.setLoggedIn(true);
                 props.setUser(response.data.isOrganizer);
-
                 setLoading(false);
                 window.location.href = "/elections";
               })
