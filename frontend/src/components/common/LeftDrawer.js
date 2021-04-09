@@ -16,7 +16,7 @@ import IconButton from "@material-ui/core/IconButton";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 
 const drawerWidth = 240;
-
+const URL = process.env.REACT_APP_API_URL;
 const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
@@ -52,7 +52,7 @@ export default function LeftDrawer() {
   //clears the session cookie to logout the current user
   const logout = () => {
     axios
-      .get("http://localhost:5000/api/logout", { withCredentials: true })
+      .get(URL + "/api/logout", { withCredentials: true })
       .then((response) => {
         console.log("Logged out Succesfully!");
         window.sessionStorage.clear();

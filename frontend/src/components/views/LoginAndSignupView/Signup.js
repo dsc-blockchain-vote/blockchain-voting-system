@@ -37,6 +37,8 @@ const emailRegex = RegExp(
   /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i
 );
 
+const URL = process.env.REACT_APP_API_URL;
+
 //function to display the input textbox for the election title and for picking the start and end dates
 export default function Signup() {
   const classes = useStyles();
@@ -95,7 +97,7 @@ export default function Signup() {
       if (!loading) setLoading(true);
       let data = { name, email, password, isOrganizer: checked };
       axios
-        .post("http://localhost:5000/api/register", data)
+        .post(URL + "/api/register", data)
         .then((response) => {
           setLoading(false);
           alert("Signed up Succesfully!");
