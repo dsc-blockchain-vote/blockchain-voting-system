@@ -35,7 +35,6 @@ export default function Profile(props) {
             setEmail(response.data.email)
             setUserID(response.data.userID)
             setType(response.data.accountType)
-            props.setUser(type, null)
         })
         .catch(error => {
             alert("Sorry you have to login first to see your account details!");

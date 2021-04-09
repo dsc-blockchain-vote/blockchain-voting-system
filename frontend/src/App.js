@@ -23,27 +23,17 @@ const useStyles = makeStyles((theme) => ({
 function App() {
     const classes = useStyles();
     const [loggedIn, setLoggedIn] = useState(false);
-    const [type, setType] = useState("");
-
-    const setUser = (user) => {
-        setType(user)
-      }
-
-    /* const setLogin = (login) => {
-        console.log(login)
-        setLoggedIn(login)
-        console.log(loggedIn)
-    } */
+    const [user, setUser] = useState("");
 
     return (
         <div className={classes.root}>
             <CssBaseline />
             <NavBar title="dVote" />
-            <LeftDrawer loggedIn={loggedIn} type={type} setUser={setUser} setLoggedIn={setLoggedIn} />
+            <LeftDrawer loggedIn={loggedIn} setLoggedIn={setLoggedIn} user={user} setUser={setUser}/>
             <main className={classes.content}>
                 <div className={classes.toolbar} />
                 {/* Page content goes here */}
-                <RouteHandler setLoggedIn={setLoggedIn} loggedIn={loggedIn}/>
+                <RouteHandler setLoggedIn={setLoggedIn} loggedIn={loggedIn} user={user} setUser={setUser}/>
             </main>
         </div>
     );

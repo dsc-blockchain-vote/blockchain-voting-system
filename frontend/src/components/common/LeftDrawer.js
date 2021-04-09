@@ -61,7 +61,7 @@ export default function LeftDrawer(props) {
       // console.log(props.loggedIn)
   }, []);
 
-    if (props.loggedIn === true){
+    if (props.loggedIn === true && props.type === "organizer"){
       return (
         <Drawer
             className={classes.drawer}
@@ -75,7 +75,7 @@ export default function LeftDrawer(props) {
             <div className={classes.toolbar} />
             <IconButton component={Link} to={{
                 pathname: "/profile",
-                state : {setUser: useEffect}
+                state : {}
               }}>
                   <AccountCircleIcon fontSize="large"/>
             </IconButton>
@@ -83,7 +83,35 @@ export default function LeftDrawer(props) {
             <Divider />
             <List>
                 <ListItemLink to="/elections" primary="Elections List" icon={<AllInboxIcon />} />
-                <ListItemLink to="elections/create" primary="Create Election" icon={<CreateIcon />} />
+                <ListItemLink to="/elections/create" primary="Create Election" icon={<CreateIcon />} />
+                <Button onClick={logout}>Logout</Button>
+            </List>
+            <Divider />
+        </Drawer>
+      );
+    }
+    if (props.loggedIn === true && props.type === "voter"){
+      return (
+        <Drawer
+            className={classes.drawer}
+            variant="permanent"
+            classes={{
+                paper: classes.drawerPaper,
+            }}
+            anchor="left"
+        >
+            {/* TODO: align logo in toolbar to navbar */}
+            <div className={classes.toolbar} />
+            <IconButton component={Link} to={{
+                pathname: "/profile",
+                state : {}
+              }}>
+                  <AccountCircleIcon fontSize="large"/>
+            </IconButton>
+
+            <Divider />
+            <List>
+                <ListItemLink to="/elections" primary="Elections List" icon={<AllInboxIcon />} />
                 <Button onClick={logout}>Logout</Button>
             </List>
             <Divider />

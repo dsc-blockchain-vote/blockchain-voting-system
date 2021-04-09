@@ -9,6 +9,7 @@ import "../../../App.css";
 import { Link } from "react-router-dom";
 import firebase from "firebase";
 import { makeStyles } from "@material-ui/core";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import axios from "axios";
 
 const useStyles = makeStyles((theme) => ({
@@ -25,6 +26,11 @@ const useStyles = makeStyles((theme) => ({
     id: "outlined-error-helper-text",
     required: true,
   },
+  buttonProgress: {
+    position: "relative",
+    marginTop: -100,
+    marginLeft: -60,
+  },
 }));
 
 const emailRegex = RegExp(
@@ -37,10 +43,12 @@ export default function Login(props) {
 
   const classes = useStyles();
 
-  var [email, setEmail] = useState("");
-  var [password, setPassword] = useState("");
-  var [errors, setErrors] = useState({ email: "", password: "" });
-  var [disabled, setDisabled] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({ email: "", password: "" });
+  const [disabled, setDisabled] = useState(true);
+  const [loading, setLoading] = React.useState(false);
+
   if (!firebase.apps.length) {
     firebase.initializeApp({
       ***REMOVED***,
@@ -72,37 +80,45 @@ export default function Login(props) {
 
   //logs in the cuurent user by creating a new session cookie
   const handleSubmit = () => {
-    if (email && password && errors.email === '' && errors.password === ''){
-        firebase.initializeApp({
-          ***REMOVED***,
-          ***REMOVED***
-        });  
-        // As httpOnly cookies are to be used, do not persist any state client side.
-        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
-        firebase
-            .auth()
-            .signInWithEmailAndPassword(email, password)
-            .then(({ user }) => { 
-              return user.getIdToken().then((idToken) => {
-                return (axios.post('http://localhost:5000/api/login', {"idToken":idToken}, {withCredentials: true})
-                .then(response => {
-                  console.log('Logged in Succesfully!');
-                  //console.log(props.setLogin) 
-                  props.setLoggedIn(true);
-                  // console.log(props.loggedIn)
-                  window.location.href = '/elections'
-                })
-                .catch(error => {
-                  console.log(error);
-                }));
+    if (email && password && errors.email === "" && errors.password === "") {
+      // As httpOnly cookies are to be used, do not persist any state client side.
+      if (!loading) setLoading(true);
+      firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
+      firebase
+        .auth()
+        .signInWithEmailAndPassword(email, password)
+        .then(({ user }) => {
+          return user.getIdToken().then((idToken) => {
+            return axios
+              .post(
+                "http://localhost:5000/api/login",
+                { idToken: idToken },
+                { withCredentials: true }
+              )
+              .then((response) => {
+                console.log("Logged in Succesfully!");
+                props.setLoggedIn(true);
+                console.log(props.loggedIn)
+                if (response.data.isOrganizer === true)
+                  props.setUser("Organizer")
+                else
+                  props.setUser("voter")
+                console.log(props.user)
+                setLoading(false);
+                // window.location.href = "/elections";
+              })
+              .catch((error) => {
+                setLoading(false);
+                console.log(error);
               });
-            })
-            .catch(error => {
-              alert(error.message);
-            })
-        }
+          });
+        })
+        .catch((error) => {
+          setLoading(false);
+          alert(error.message);
+        });
     }
-
+  }
   return (
     <Paper elevation={10} className={classes.paperStyle}>
       <Box>
@@ -157,12 +173,15 @@ export default function Login(props) {
               variant="contained"
               color="primary"
               size="large"
-              disabled={disabled}
+              disabled={disabled || loading}
               style={{ marginLeft: 10, marginTop: 5 }}
               onClick={handleSubmit}
             >
               Login
             </Button>
+            {loading && (
+              <CircularProgress size={24} className={classes.buttonProgress} />
+            )}
           </Grid>
         </Grid>
       </Box>

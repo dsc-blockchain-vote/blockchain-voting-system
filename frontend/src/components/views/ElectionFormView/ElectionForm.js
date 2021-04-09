@@ -169,7 +169,6 @@ class ElectionForm extends Component {
 
   // Create new election
   createElection = () => {
-    console.log(this.state.errors.candidateName);
     if (
       this.state.errors.title === "" &&
       this.checkForErrors("candidate") === true &&
@@ -203,7 +202,8 @@ class ElectionForm extends Component {
         withCredentials: true,
       })
         .then((response) => {
-          console.log("Created election");
+          alert("Election Saved successfully");
+          window.location.href = "/elections/1";
         })
         .catch((error) => {
           console.log(error);
