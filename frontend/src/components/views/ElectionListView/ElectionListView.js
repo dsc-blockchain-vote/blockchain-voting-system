@@ -53,6 +53,7 @@ function parseElections(data) {
     const endTime = parseJSON(election.endTime);
     election.startTime = startTime;
     election.endTime = endTime;
+    election.deployed = election.hasOwnProperty("address");
     result[id] = election;
   }
   return result;
@@ -239,7 +240,9 @@ function ElectionButton(props) {
     })
       .then((response) => {
         setLoading(false);
-        alert("Deployed election");
+        alert(
+          `Deployed election at address ${response.data["electionAddress"]}`
+        );
         setDisabled(true);
       })
       .catch((error) => {
@@ -270,7 +273,7 @@ function ElectionButton(props) {
             variant="outlined"
             color="primary"
             onClick={deploy}
-            disabled={disabled}
+            disabled={disabled || props.election.deployed}
           >
             Deploy
           </Button>
@@ -279,7 +282,7 @@ function ElectionButton(props) {
             color="primary"
             component={Link}
             to={{ pathname: link }}
-            disabled={disabled}
+            disabled={disabled || props.election.deployed}
           >
             {text}
           </Button>
@@ -303,7 +306,7 @@ function ElectionButton(props) {
           id: props.id,
         },
       }}
-      disabled={disabled}
+      disabled={!props.election.deployed}
     >
       {text}
     </Button>

@@ -11,7 +11,7 @@ import axios from "axios";
 import { CircularProgress } from "@material-ui/core";
 
 const emailRegex = RegExp(
-  /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
+  /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i
 );
 
 // The form for creating and editing elections
@@ -91,42 +91,40 @@ class ElectionForm extends Component {
 
   //checks for the validity of each input value entered and stores appropriate error messages in the error state variable
   validation = (name, value, id) => {
+    let errors = { ...this.state.errors };
     if (name === "title") {
-      if (value.length === 0)
-        this.state.errors.title = "Title should not be empty!";
+      errors.title = "";
+      if (value.length === 0) errors.title = "Title should not be empty!";
       else if (!/^[a-zA-Z\s]+$/.test(value))
-        this.state.errors.title =
-          "Title should only consist of alphabets and spaces!";
-      else if (/^[a-zA-Z\s]+$/.test(value)) this.state.errors.title = "";
+        errors.title = "Title should only consist of alphabets and spaces!";
     } else if (name === "candidateName") {
+      delete errors.candidateName[id];
       if (value.length === 0)
-        this.state.errors.candidateName[id] =
-          "Candidate name should not be empty!";
+        errors.candidateName[id] = "Candidate name should not be empty!";
       else if (!/^[a-zA-Z\s]+$/.test(value))
-        this.state.errors.candidateName[id] =
+        errors.candidateName[id] =
           "Candidate name should only consist of alphabets and spaces!";
-      else if (/^[a-zA-Z\s]+$/.test(value))
-        this.state.errors.candidateName[id] = "";
     } else if (name === "voterName") {
+      delete errors.voterName[id];
       if (value.length === 0)
-        this.state.errors.voterName[id] = "Voter name should not be empty!";
+        errors.voterName[id] = "Voter name should not be empty!";
       else if (!/^[a-zA-Z\s]+$/.test(value))
-        this.state.errors.voterName[id] =
+        errors.voterName[id] =
           "Voter name should only consist of alphabets and spaces!";
-      else if (/^[a-zA-Z\s]+$/.test(value))
-        this.state.errors.voterName[id] = "";
     } else if (name === "voterID") {
-      if (!value)
-        this.state.errors.voterID[id] = "Voter ID should not be empty";
+      delete errors.voterID[id];
+      if (!value) errors.voterID[id] = "Voter ID should not be empty";
       // else if (!/^[0-9\b]+$/.test(value))
-      //     this.state.errors.voterID[id] =
+      //     errors.voterID[id] =
       //         "Voter ID should only consist of numbers";
-      else if (/^[0-9\b]+$/.test(value)) this.state.errors.voterID[id] = "";
+      else if (/^[0-9\b]+$/.test(value)) delete errors.voterID[id];
     } else if (name === "email") {
-      this.state.errors.email[id] = emailRegex.test(value)
-        ? ""
-        : "Invalid email ID";
+      delete errors.email[id];
+      if (!emailRegex.test(value)) {
+        errors.email[id] = "Invalid email ID";
+      }
     }
+    this.setState({ errors });
   };
 
   //changes the value of the start date on receiving input
@@ -258,33 +256,34 @@ class ElectionForm extends Component {
   //checks if there are no errors or no empty fields
   checkForErrors = (name) => {
     if (name === "candidate") {
-      for (var i = 0; i < this.state.errors.candidateName.length; i++) {
-        if (this.state.errors.candidateName[i] != "") return false;
+      for (let i = 0; i < this.state.errors.candidateName.length; i++) {
+        if (!this.state.errors.candidateName[i]) return false;
       }
       return true;
     }
     if (name === "voterName") {
-      for (var i = 0; i < this.state.errors.voterName.length; i++) {
-        if (this.state.errors.voterName[i] != "") return false;
+      for (let i = 0; i < this.state.errors.voterName.length; i++) {
+        console.log(this.state.errors.voterName[i]);
+        if (this.state.errors.voterName[i]) return false;
       }
       return true;
     }
     if (name === "voterID") {
-      for (var i = 0; i < this.state.errors.voterID.length; i++) {
-        if (this.state.errors.voterID[i] != "") return false;
+      for (let i = 0; i < this.state.errors.voterID.length; i++) {
+        if (this.state.errors.voterID[i]) return false;
       }
       return true;
     }
     if (name === "email") {
-      for (var i = 0; i < this.state.errors.email.length; i++) {
-        if (this.state.errors.email[i] != "") return false;
+      for (let i = 0; i < this.state.errors.email.length; i++) {
+        if (this.state.errors.email[i]) return false;
       }
       return true;
     }
     if (name === "candidatesEmpty") {
       if (this.state.candidates.length === 0) return true;
       else {
-        for (var i = 0; i < this.state.candidates.length; i++) {
+        for (let i = 0; i < this.state.candidates.length; i++) {
           if (
             this.state.candidates[i].id === null ||
             this.state.candidates[i].name === ""
@@ -296,7 +295,7 @@ class ElectionForm extends Component {
     } else if (name === "votersEmpty") {
       if (this.state.voters.length === 0) return true;
       else {
-        for (var j = 0; j < this.state.voters.length; j++) {
+        for (let j = 0; j < this.state.voters.length; j++) {
           if (
             this.state.voters[j].id === null ||
             this.state.voters[j].name === "" ||
@@ -313,7 +312,7 @@ class ElectionForm extends Component {
   getData() {
     // if we are editing this page:
     if (this.props.edit) {
-      const result = axios
+      axios
         .get(`http://localhost:5000/api/election/${this.props.id}`, {
           withCredentials: true,
         })
