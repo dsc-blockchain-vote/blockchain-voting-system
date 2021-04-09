@@ -466,8 +466,6 @@ app.post("/api/login", async (req, res) => {
       res.end("Unauthorized");
     });
 
-  const ref = db.ref("users/" + uid);
-  const name = await (await ref.once("value")).val().name;
   admin
     .auth()
     .createSessionCookie(idToken, { expiresIn })
@@ -475,7 +473,7 @@ app.post("/api/login", async (req, res) => {
       (sessionCookie) => {
         const options = { maxAge: expiresIn, httpOnly: true };
         res.cookie("session", sessionCookie, options);
-        res.send({ isOrganizer: isOrganizer, name: name });
+        res.send({ isOrganizer: isOrganizer });
       },
       (error) => {
         res.status(401);
@@ -552,7 +550,7 @@ app.put("/api/election/:electionID/update", verifyUser, async (req, res) => {
     await db.ref("elections/" + req.params.electionID).update(updates);
     res.send({ electionID: req.params.electionID });
   } catch (error) {
-    res.status(400).send("bad request");
+    res.status(400).send(error.message);
   }
 });
 

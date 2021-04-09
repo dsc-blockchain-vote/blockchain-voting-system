@@ -46,6 +46,10 @@ export default function Component() {
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [disabled, setDisabled] = useState(true);
   const [loading, setLoading] = React.useState(false);
+  const authorized = window.sessionStorage.getItem("authorized");
+
+  // if already authenticated redirect to elections
+  if (authorized) window.location.href = "/elections";
 
   if (!firebase.apps.length) {
     firebase.initializeApp({
@@ -95,6 +99,11 @@ export default function Component() {
               )
               .then((response) => {
                 console.log("Logged in Succesfully!");
+                let user = null;
+                if (response.data.isOrganizer) user = "organizer";
+                else user = "voter";
+                window.sessionStorage.setItem("user", user);
+                window.sessionStorage.setItem("authorized", "true");
                 setLoading(false);
                 window.location.href = "/elections";
               })
