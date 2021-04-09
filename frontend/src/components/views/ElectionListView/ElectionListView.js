@@ -1,6 +1,7 @@
-import React, { Component, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Paper from "@material-ui/core/Paper";
 import { makeStyles } from "@material-ui/core/styles";
+import { grey } from "@material-ui/core/colors";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import TimerIcon from "@material-ui/icons/Timer";
@@ -14,9 +15,7 @@ import Fade from "@material-ui/core/Fade";
 import format from "date-fns/format";
 import parseJSON from "date-fns/parseJSON";
 import distanceInWordsToNow from "date-fns/formatDistanceToNow";
-import isPast from "date-fns/isPast";
-import isFuture from "date-fns/isFuture";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button, ButtonGroup, Grid, Tooltip } from "@material-ui/core";
 import axios from "axios";
 
@@ -37,8 +36,13 @@ const useStyles = makeStyles({
     marginTop: 10,
     marginBottom: 20,
   },
+  buttonProgress: {
+    position: "relative",
+    color: grey[900],
+    marginTop: 0,
+    marginLeft: -36,
+  },
 });
-
 // Parse election data from a JSON response
 function parseElections(data) {
   let result = {};
@@ -49,6 +53,7 @@ function parseElections(data) {
     const endTime = parseJSON(election.endTime);
     election.startTime = startTime;
     election.endTime = endTime;
+    election.deployed = election.hasOwnProperty("address");
     result[id] = election;
   }
   return result;
@@ -56,7 +61,12 @@ function parseElections(data) {
 
 export default function ElectionListView(props) {
   const classes = useStyles();
-  const [value, setValue] = React.useState(0);
+  const search = useLocation().search;
+  let getTab = new URLSearchParams(search).get("tab");
+  let tab = 0;
+  if (getTab !== null) tab = parseInt(getTab);
+  if (tab > 2 || tab < 0) tab = 0;
+  const [value, setValue] = React.useState(tab);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -130,7 +140,7 @@ function ElectionList(props) {
   // get elections for this user
   useEffect(() => {
     setLoading(true);
-    const result = axios
+    axios
       .get("http://localhost:5000/api/election", {
         params: {
           time: props.type,
@@ -142,10 +152,13 @@ function ElectionList(props) {
         setLoading(false);
       })
       .catch((error) => {
-        console.log(error);
+        if (error.response.status === 401) {
+          window.sessionStorage.clear();
+          window.location.href = "/";
+        }
         setLoading(false);
       });
-  }, []);
+  }, [props.type]);
 
   // If the elections are loading, display a progress icon
   if (loading) {
@@ -216,58 +229,84 @@ function ElectionList(props) {
 
 // Represents a button that changes contents based on the election results
 function ElectionButton(props) {
+  const [user, setUser] = useState(window.sessionStorage.getItem("user"));
+  window.onstorage = () => {
+    let val = window.sessionStorage.getItem("user");
+    if (val !== null && val !== user) setUser(val);
+  };
   let text = "View Election";
   let link = "";
-  let disabled = false;
-  let disableDeploy = false;
-
+  const classes = useStyles();
+  const [disabled, setDisabled] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
   const deploy = () => {
+    if (!loading) setLoading(true);
     axios({
       method: "put",
       url: `http://localhost:5000/api/election/${props.id}/deploy`,
       withCredentials: true,
     })
       .then((response) => {
-        console.log("Deployed election");
-        disabled = true;
+        setLoading(false);
+        alert(
+          `Deployed election at address ${response.data["electionAddress"]}`
+        );
+        setDisabled(true);
       })
       .catch((error) => {
-        console.log(error);
+        setLoading(false);
+        if (error.response.status === 401) {
+          window.sessionStorage.clear();
+          window.location.href = "/";
+        }
       });
   };
 
   if (props.type === "ongoing") {
     text = "Cast Ballot";
-    link = `elections/${props.id}/ballot`;
+    if (user === "organizer") text = "View ballot";
+    link = `/elections/${props.id}/ballot`;
   } else if (props.type === "upcoming") {
     text = "Edit";
-    link = `elections/${props.id}/edit`;
+    link = `/elections/${props.id}/edit`;
   } else if (props.type === "previous") {
     text = "View Results";
-    link = `elections/${props.id}/results`;
+    link = `/elections/${props.id}/results`;
   }
 
   if (props.type === "upcoming") {
+    if (user !== "organizer") {
+      return <></>;
+    }
     return (
-      <ButtonGroup fullWidth>
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={deploy}
-          disabled={disableDeploy}
+      <div>
+        <ButtonGroup
+          fullWidth
+          size="large"
+          style={loading ? { filter: "blur(2px)" } : {}}
         >
-          Deploy
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          component={Link}
-          to={link}
-          disabled={disabled}
-        >
-          {text}
-        </Button>
-      </ButtonGroup>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={deploy}
+            disabled={disabled || props.election.deployed || loading}
+          >
+            Deploy
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            component={Link}
+            to={{ pathname: link }}
+            disabled={disabled || props.election.deployed || loading}
+          >
+            {text}
+          </Button>
+        </ButtonGroup>
+        {loading && (
+          <CircularProgress size={32} className={classes.buttonProgress} />
+        )}
+      </div>
     );
   }
 
@@ -283,7 +322,7 @@ function ElectionButton(props) {
           id: props.id,
         },
       }}
-      disabled={disabled}
+      disabled={!props.election.deployed}
     >
       {text}
     </Button>
