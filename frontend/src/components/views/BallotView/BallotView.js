@@ -11,9 +11,8 @@ import RadioGroup from "@material-ui/core/RadioGroup";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { makeStyles } from "@material-ui/core";
-import React, { Component, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { set } from "date-fns";
 
 const useStyles = makeStyles((theme) => ({
   buttonProgress: {
@@ -59,6 +58,10 @@ export default function BallotView(props) {
       .catch((error) => {
         setLoading(false);
         alert(error.message);
+        if (error.response.status === 401) {
+          window.sessionStorage.clear();
+          window.location.href = "/";
+        }
       });
   }, []);
 
@@ -86,10 +89,15 @@ export default function BallotView(props) {
               response.data["transaction hash"]
             }. Take a screenshot of this or save this transaction hash safely somewhere, since you won't be able to view this hash again!`
           );
+          window.location.href = "/elections";
         })
         .catch((error) => {
           setLoading(false);
           alert(error.message);
+          if (error.response.status === 401) {
+            window.sessionStorage.clear();
+            window.location.href = "/";
+          }
         });
     } else alert("Sorry you have already voted, you can't vote again!");
   };
@@ -128,6 +136,11 @@ function BallotList(props) {
   const [value, setValue] = useState("");
   const [disabled, setDisabled] = useState(true);
   const classes = useStyles();
+  const [user, setUser] = useState(window.sessionStorage.getItem("user"));
+  window.onstorage = () => {
+    let val = window.sessionStorage.getItem("user");
+    if (val !== null && val !== user) setUser(val);
+  };
 
   //updates the candidate chosen by the voter
   const onChange = (e) => {
@@ -163,7 +176,7 @@ function BallotList(props) {
             type="submit"
             variant="contained"
             color="primary"
-            disabled={disabled || props.loading}
+            disabled={disabled || props.loading || user !== "voter"}
           >
             Cast Ballot
           </Button>
