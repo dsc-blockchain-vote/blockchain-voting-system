@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
@@ -37,10 +37,8 @@ const emailRegex = RegExp(
   /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
 );
 
-
-//function to display the input textbox for the election title and for picking the start and end dates 
+//function to display the input textbox for the election title and for picking the start and end dates
 export default function Login(props) {
-
   const classes = useStyles();
 
   const [email, setEmail] = useState("");
@@ -98,14 +96,10 @@ export default function Login(props) {
               .then((response) => {
                 console.log("Logged in Succesfully!");
                 props.setLoggedIn(true);
-                console.log(props.loggedIn)
-                if (response.data.isOrganizer === true)
-                  props.setUser("Organizer")
-                else
-                  props.setUser("voter")
-                console.log(props.user)
+                props.setUser(response.data.isOrganizer);
+
                 setLoading(false);
-                // window.location.href = "/elections";
+                window.location.href = "/elections";
               })
               .catch((error) => {
                 setLoading(false);
@@ -118,7 +112,7 @@ export default function Login(props) {
           alert(error.message);
         });
     }
-  }
+  };
   return (
     <Paper elevation={10} className={classes.paperStyle}>
       <Box>
