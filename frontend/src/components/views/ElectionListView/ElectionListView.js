@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Paper from "@material-ui/core/Paper";
 import { makeStyles } from "@material-ui/core/styles";
 import { grey } from "@material-ui/core/colors";
@@ -140,7 +140,7 @@ function ElectionList(props) {
   // get elections for this user
   useEffect(() => {
     setLoading(true);
-    const result = axios
+    axios
       .get("http://localhost:5000/api/election", {
         params: {
           time: props.type,
@@ -158,7 +158,7 @@ function ElectionList(props) {
         }
         setLoading(false);
       });
-  }, []);
+  }, [props.type]);
 
   // If the elections are loading, display a progress icon
   if (loading) {
@@ -289,7 +289,7 @@ function ElectionButton(props) {
             variant="outlined"
             color="primary"
             onClick={deploy}
-            disabled={disabled || props.election.deployed}
+            disabled={disabled || props.election.deployed || loading}
           >
             Deploy
           </Button>
@@ -298,7 +298,7 @@ function ElectionButton(props) {
             color="primary"
             component={Link}
             to={{ pathname: link }}
-            disabled={disabled || props.election.deployed}
+            disabled={disabled || props.election.deployed || loading}
           >
             {text}
           </Button>

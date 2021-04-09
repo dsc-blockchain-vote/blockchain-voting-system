@@ -11,9 +11,8 @@ import RadioGroup from "@material-ui/core/RadioGroup";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { makeStyles } from "@material-ui/core";
-import React, { Component, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { set } from "date-fns";
 
 const useStyles = makeStyles((theme) => ({
   buttonProgress: {
@@ -90,6 +89,7 @@ export default function BallotView(props) {
               response.data["transaction hash"]
             }. Take a screenshot of this or save this transaction hash safely somewhere, since you won't be able to view this hash again!`
           );
+          window.location.href = "/elections";
         })
         .catch((error) => {
           setLoading(false);
@@ -180,7 +180,7 @@ function BallotList(props) {
           >
             Cast Ballot
           </Button>
-          {props.loading && user === "voter" && (
+          {props.loading && (
             <CircularProgress size={100} className={classes.buttonProgress} />
           )}
         </FormControl>

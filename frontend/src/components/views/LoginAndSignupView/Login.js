@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const emailRegex = RegExp(
-  /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
+  /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i
 );
 
 //function to display the input textbox for the election title and for picking the start and end dates
@@ -65,7 +65,7 @@ export default function Component() {
     validation(e.target.name, e.target.value);
     if (e.target.name === "email") setEmail(e.target.value);
     else if (e.target.name === "password") setPassword(e.target.value);
-    if (email && password && errors.email == "" && errors.password == "")
+    if (email && password && errors.email === "" && errors.password === "")
       setDisabled(false);
     else setDisabled(true);
   };
