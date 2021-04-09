@@ -1,4 +1,4 @@
-import React, { Component, useEffect } from "react";
+import React, { Component, useEffect, useState } from "react";
 import Paper from "@material-ui/core/Paper";
 import { makeStyles } from "@material-ui/core/styles";
 import { grey } from "@material-ui/core/colors";
@@ -152,7 +152,10 @@ function ElectionList(props) {
         setLoading(false);
       })
       .catch((error) => {
-        console.log(error);
+        if (error.response.status === 401) {
+          window.sessionStorage.clear();
+          window.location.href = "/";
+        }
         setLoading(false);
       });
   }, []);
@@ -226,6 +229,11 @@ function ElectionList(props) {
 
 // Represents a button that changes contents based on the election results
 function ElectionButton(props) {
+  const [user, setUser] = useState(window.sessionStorage.getItem("user"));
+  window.onstorage = () => {
+    let val = window.sessionStorage.getItem("user");
+    if (val !== null && val !== user) setUser(val);
+  };
   let text = "View Election";
   let link = "";
   const classes = useStyles();
@@ -246,12 +254,17 @@ function ElectionButton(props) {
         setDisabled(true);
       })
       .catch((error) => {
-        console.log(error);
+        setLoading(false);
+        if (error.response.status === 401) {
+          window.sessionStorage.clear();
+          window.location.href = "/";
+        }
       });
   };
 
   if (props.type === "ongoing") {
     text = "Cast Ballot";
+    if (user === "organizer") text = "View ballot";
     link = `/elections/${props.id}/ballot`;
   } else if (props.type === "upcoming") {
     text = "Edit";
@@ -262,6 +275,9 @@ function ElectionButton(props) {
   }
 
   if (props.type === "upcoming") {
+    if (user !== "organizer") {
+      return <></>;
+    }
     return (
       <div>
         <ButtonGroup

@@ -93,17 +93,16 @@ export default function Signup() {
       errors.password === ""
     ) {
       if (!loading) setLoading(true);
-      let check = !checked;
-      let data = { name, email, password, check };
+      let data = { name, email, password, isOrganizer: checked };
       axios
         .post("http://localhost:5000/api/register", data)
         .then((response) => {
-          alert("Signed up Succesfully!");
           setLoading(false);
-          window.location.href = "/elections";
+          alert("Signed up Succesfully!");
+          window.location.href = "/";
         })
         .catch((error) => {
-          alert(error.message);
+          alert(error.response.data);
           setLoading(false);
         });
     }
