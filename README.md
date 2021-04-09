@@ -14,9 +14,30 @@ https://docs.google.com/document/d/13X7lTKtGclTqntdPTq1MLEUttlsnWYv8Z6xc_NbXSEs/
 
 &nbsp;
 
+# Current active website
+
+### You can explore a fully functioning version of this project without having to clone this repository at:
+
+### http://dvote.cloudns.cl/
+
+&nbsp;
+
 # Starting local frontend
 
-Make sure you are in the `blockchain-voting-system` directory and run the following command
+Make a `.env` file in the `frontend` directory. With the following fields
+
+`REACT_APP_API_URL`="..."
+
+`REACT_APP_FIREBASE_API_KEY`="..."
+
+`REACT_APP_FIREBASE_AUTH_DOMAIN`="..."
+
+Replace the ... above with the following:
+
+Put the URL of the backend server in the field `REACT_APP_API_URL`. Remove the domain and do NOT end the url in a forward slash.  
+In the other 2 fields put the firebase api key and auth domain which can be obtained from your firebase account.
+
+Now, make sure you are in the `blockchain-voting-system` directory and run the following command
 
 ```console
 $ cd frontend && npm install
@@ -36,7 +57,23 @@ Note: For the frontend to work, the local server should also be running. To star
 
 # Starting local server
 
-Make sure you are in the `blockchain-voting-system` directory and run the following command
+Make a `.env` file in the `frontend` directory. With th efollowing fields
+
+`URL`="..."
+
+`MNEMONIC`="..."
+
+`DATABASE`="..."
+
+Replace the ... above with the following:
+
+Put the URL of your blockchain node in the field `URL`.  
+Choose a 12 word mnemonic phrase to initialize the HDWallet. Put this phrase in the `MNEMONIC` field.  
+In the `DATABASE` field put the URL of the firebase database which can be obtained from your firebase console.
+
+Next, download the firebase service account file from firebase console, rename it to `service-account.json` and put it in the `backend` directory.
+
+Now, make sure you are in the `blockchain-voting-system` directory and run the following command
 
 ```console
 $ cd backend && npm install
