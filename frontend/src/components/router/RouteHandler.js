@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { Route, Switch } from "react-router-dom";
 import BallotView from "../views/BallotView/BallotView";
 import CreateElectionView from "../views/ElectionFormView/CreateElectionView";
@@ -17,11 +17,11 @@ export default function RouteHandler() {
       <Route path="/login" component={Login} />
       <Route path="/signup" component={Signup} />
       <Route path="/profile" component={Profile} />
+      <Route exact path="/elections" component={ElectionListView} />
       <Route exact path="/elections/create" component={CreateElectionView} />
       <Route exact path="/elections/:id/ballot" component={BallotView} />
       <Route exact path="/elections/:id/edit" component={EditElectionView} />
       <Route exact path="/elections/:id/results" component={ResultsView} />
-      <Route exact path="/elections/:tab?" component={ElectionListView} />
     </Switch>
   );
 }
