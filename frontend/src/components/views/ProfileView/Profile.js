@@ -17,7 +17,7 @@ const useStyles = makeStyles({
     color: "black",
   },
 });
-
+const URL = process.env.REACT_APP_API_URL;
 export default function Profile(props) {
   const classes = useStyles();
 
@@ -28,7 +28,7 @@ export default function Profile(props) {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/user/info", { withCredentials: true })
+      .get(URL + "/api/user/info", { withCredentials: true })
       .then((response) => {
         setName(response.data.name);
         setEmail(response.data.email);

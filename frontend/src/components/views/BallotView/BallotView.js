@@ -14,6 +14,8 @@ import { makeStyles } from "@material-ui/core";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+const URL = process.env.REACT_APP_API_URL;
+
 const useStyles = makeStyles((theme) => ({
   buttonProgress: {
     position: "absolute",
@@ -45,7 +47,7 @@ export default function BallotView(props) {
     setCandidates(candidates);
     if (!loading) setLoading(true);
     axios
-      .get(`http://localhost:5000/api/election/${id}`, {
+      .get(URL + `/api/election/${id}`, {
         withCredentials: true,
       })
       .then((response) => {
@@ -75,7 +77,7 @@ export default function BallotView(props) {
       if (!loading) setLoading(true);
       axios
         .put(
-          `http://localhost:5000/api/election/${id}/vote`,
+          URL + `/api/election/${id}/vote`,
           { candidateID: value },
           { withCredentials: true }
         )
