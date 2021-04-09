@@ -14,6 +14,8 @@ const emailRegex = RegExp(
   /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i
 );
 
+const URL = process.env.REACT_APP_API_URL;
+
 // The form for creating and editing elections
 // TODO: We should split ElectionForm into CreateElectionForm and EditElectionForm to make this code significantly easier to maintain
 // This code is the result of a series of questionable design decisions
@@ -193,7 +195,7 @@ class ElectionForm extends Component {
       this.setState({ loading: true });
       axios({
         method: "post",
-        url: "http://localhost:5000/api/election/create",
+        url: URL + "/api/election/create",
         data: election,
         withCredentials: true,
       })
@@ -220,9 +222,8 @@ class ElectionForm extends Component {
       this.state.title &&
       this.state.start &&
       this.state.end &&
-      this.checkForErrors("candidatesEmpty") === false
-      // &&
-      // this.checkForErrors("votersEmpty") === false
+      this.checkForErrors("candidatesEmpty") === false &&
+      this.checkForErrors("votersEmpty") === false
     ) {
       const election = {
         electionName: this.state.title,
@@ -237,7 +238,7 @@ class ElectionForm extends Component {
       this.setState({ loading: true });
       axios({
         method: "put",
-        url: `http://localhost:5000/api/election/${this.props.id}/update`,
+        url: URL + `/api/election/${this.props.id}/update`,
         data: election,
         withCredentials: true,
       })
@@ -313,7 +314,7 @@ class ElectionForm extends Component {
     // if we are editing this page:
     if (this.props.edit) {
       axios
-        .get(`http://localhost:5000/api/election/${this.props.id}`, {
+        .get(URL + `/api/election/${this.props.id}`, {
           withCredentials: true,
         })
         .then((response) => {

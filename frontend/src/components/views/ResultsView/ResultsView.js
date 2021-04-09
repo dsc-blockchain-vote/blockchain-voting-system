@@ -16,6 +16,8 @@ import { EventTracker, Animation } from "@devexpress/dx-react-chart";
 import axios from "axios";
 import { CircularProgress } from "@material-ui/core";
 
+const URL = process.env.REACT_APP_API_URL;
+
 class ResultsView extends Component {
   state = {};
   constructor(props) {
@@ -29,12 +31,9 @@ class ResultsView extends Component {
 
   getData() {
     axios
-      .get(
-        `http://localhost:5000/api/election/${this.props.match.params.id}/result`,
-        {
-          withCredentials: true,
-        }
-      )
+      .get(URL + `/api/election/${this.props.match.params.id}/result`, {
+        withCredentials: true,
+      })
       .then((response) => {
         const results = [];
         for (let c in response.data.results) {
@@ -45,12 +44,9 @@ class ResultsView extends Component {
         }
         this.setState({ data: results });
         axios
-          .get(
-            `http://localhost:5000/api/election/${this.props.match.params.id}`,
-            {
-              withCredentials: true,
-            }
-          )
+          .get(URL + `/api/election/${this.props.match.params.id}`, {
+            withCredentials: true,
+          })
           .then((response) => {
             this.setState({
               title: response.data.electionName,

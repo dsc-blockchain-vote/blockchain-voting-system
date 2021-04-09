@@ -37,6 +37,8 @@ const emailRegex = RegExp(
   /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i
 );
 
+const URL = process.env.REACT_APP_API_URL;
+
 //function to display the input textbox for the election title and for picking the start and end dates
 export default function Component() {
   const classes = useStyles();
@@ -53,8 +55,8 @@ export default function Component() {
 
   if (!firebase.apps.length) {
     firebase.initializeApp({
-      ***REMOVED***,
-      ***REMOVED***,
+      apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+      authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
     });
   } else {
     firebase.app(); // if already initialized, use that one
@@ -93,7 +95,7 @@ export default function Component() {
           return user.getIdToken().then((idToken) => {
             return axios
               .post(
-                "http://localhost:5000/api/login",
+                URL + "/api/login",
                 { idToken: idToken },
                 { withCredentials: true }
               )
