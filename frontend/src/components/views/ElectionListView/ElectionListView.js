@@ -19,6 +19,8 @@ import { Link, useLocation } from "react-router-dom";
 import { Button, ButtonGroup, Grid, Tooltip } from "@material-ui/core";
 import axios from "axios";
 
+const URL = process.env.REACT_APP_API_URL;
+
 const useStyles = makeStyles({
   root: {
     flexGrow: 1,
@@ -141,7 +143,7 @@ function ElectionList(props) {
   useEffect(() => {
     setLoading(true);
     axios
-      .get("http://localhost:5000/api/election", {
+      .get(URL + "/api/election", {
         params: {
           time: props.type,
         },
@@ -243,7 +245,7 @@ function ElectionButton(props) {
     if (!loading) setLoading(true);
     axios({
       method: "put",
-      url: `http://localhost:5000/api/election/${props.id}/deploy`,
+      url: URL + `/api/election/${props.id}/deploy`,
       withCredentials: true,
     })
       .then((response) => {
