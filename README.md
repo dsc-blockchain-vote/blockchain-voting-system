@@ -55,9 +55,12 @@ Note: For the frontend to work, the local server should also be running. To star
 
 &nbsp;
 
-# Starting local server
+# Starting local server  
 
-Make a `.env` file in the `frontend` directory. With th efollowing fields
+Note: To do this you will either need your own blockchain network or you can connect your own node to our network and enable JSON-RPC endpoints on it  
+
+
+Make a `.env` file in the `backend` directory. With the following fields
 
 `URL`="..."
 
