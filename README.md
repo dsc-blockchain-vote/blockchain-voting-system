@@ -14,7 +14,9 @@ https://docs.google.com/document/d/13X7lTKtGclTqntdPTq1MLEUttlsnWYv8Z6xc_NbXSEs/
 
 &nbsp;
 
-# Current active website
+# Website
+
+## Status: Down
 
 ### You can explore a fully functioning version of this project without having to clone this repository at:
 
